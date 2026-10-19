@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Kep Hospital HMS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans+Khmer:wght@400;500;600;700&family=Noto+Serif+Khmer:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+ --bg:#03121c;--bg2:#062033;--pn:#0a2a40;--pn2:#0e3550;--ln:#164b6a;--ln2:#1f6185;
+ --tx:#e4f5f9;--mu:#8fb3c3;--dim:#5c8396;
+ --ac:#22d3e6;--ac2:#0ea5c6;--sea:#3b8bff;--sand:#f4cf86;--coral:#ff8a7a;
+ --ok:#34d399;--wa:#fbbf24;--bad:#f87171;--r:14px;
+ --km:'Noto Sans Khmer',system-ui,sans-serif;--ser:'Noto Serif Khmer',serif;--mono:'JetBrains Mono',ui-monospace,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;color:var(--tx);font-family:var(--km);font-size:14px;overscroll-behavior-y:none}
+body{background:radial-gradient(1100px 560px at 100% -10%,#0b3a57 0%,transparent 60%),radial-gradient(900px 500px at -10% 110%,#073047 0%,transparent 55%),var(--bg)}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.mono{font-family:var(--mono)}
+.ser{font-family:var(--ser)}
+#app{display:flex;height:100%}
+/* sidebar */
+#side{width:250px;flex:none;background:linear-gradient(180deg,#05263b 0%,#041b2b 60%,#03141f 100%);border-right:1px solid var(--ln);display:flex;flex-direction:column;position:relative;overflow:hidden}
+#side::after{content:'';position:absolute;left:0;right:0;bottom:0;height:110px;pointer-events:none;opacity:.55;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 60'%3E%3Cpath d='M0 30 Q30 12 60 30 T120 30 T180 30 T240 30 V60 H0Z' fill='%230ea5c6' fill-opacity='.22'/%3E%3Cpath d='M0 42 Q30 26 60 42 T120 42 T180 42 T240 42 V60 H0Z' fill='%2322d3e6' fill-opacity='.18'/%3E%3C/svg%3E") repeat-x bottom/240px 60px}
+.brand{display:flex;gap:11px;align-items:center;padding:18px 16px 14px;border-bottom:1px solid var(--ln)}
+.logo{width:42px;height:42px;border-radius:12px;flex:none;display:grid;place-items:center;background:linear-gradient(135deg,#22d3e6,#2563eb);box-shadow:0 6px 18px -6px #22d3e6aa}
+.brand b{font-family:var(--ser);font-size:15px;display:block;line-height:1.35}
+.brand small{color:var(--mu);font-size:11px;letter-spacing:.3px}
+#nav{flex:1;overflow-y:auto;padding:8px 10px 120px;position:relative;z-index:1}
+#nav .g{font-size:11px;color:var(--dim);padding:14px 10px 5px;letter-spacing:.4px}
+#nav a{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--mu);cursor:pointer;text-decoration:none;margin:1px 0;transition:.15s}
+#nav a svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#nav a span{flex:1;line-height:1.3}
+#nav a small{display:block;font-size:10.5px;color:var(--dim)}
+#nav a:hover{background:#0c3048;color:var(--tx)}
+#nav a.on{background:linear-gradient(90deg,#0f4a66,#0b3550);color:#fff;box-shadow:inset 3px 0 0 var(--ac)}
+#nav a .bd{background:var(--coral);color:#2a0b07;font-size:10.5px;font-weight:700;border-radius:20px;padding:0 7px;font-family:var(--mono)}
+/* main */
+#main{flex:1;display:flex;flex-direction:column;min-width:0}
+#top{display:flex;align-items:center;gap:10px;padding:10px 20px;border-bottom:1px solid var(--ln);background:#041a29cc;backdrop-filter:blur(8px)}
+#ttl{font-family:var(--ser);font-size:18px;font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#ttl small{font-family:var(--km);font-weight:400;font-size:12px;color:var(--mu);margin-left:10px}
+#hb{display:none}
+.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--ln);background:var(--pn);border-radius:20px;padding:6px 12px;cursor:pointer;font-size:12px;color:var(--mu);white-space:nowrap}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.pill.ok i{background:var(--ok)}.pill.busy i{background:var(--wa);animation:pu 1s infinite}.pill.err i{background:var(--bad)}
+@keyframes pu{50%{opacity:.3}}
+.user{display:flex;align-items:center;gap:8px;padding:4px 10px 4px 4px;border-radius:20px;background:var(--pn);border:1px solid var(--ln)}
+.av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:700;background:linear-gradient(135deg,#0ea5c6,#1d4ed8);color:#fff;font-size:13px;flex:none}
+.user b{font-size:12.5px;display:block;line-height:1.2}.user small{font-size:10.5px;color:var(--mu)}
+#view{flex:1;overflow-y:auto;padding:20px;overscroll-behavior:contain}
+/* ui */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--ln2);background:var(--pn2);color:var(--tx);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:500;white-space:nowrap;transition:.15s;line-height:1.3}
+.btn:hover{border-color:var(--ac);color:#fff}
+.btn.pri{background:linear-gradient(135deg,#14b8cf,#2563eb);border-color:transparent;color:#fff;box-shadow:0 6px 16px -8px #22d3e6}
+.btn.ok{background:#0f5b47;border-color:#1c8b6c}.btn.bad{background:#5b1a1a;border-color:#9b2c2c}.btn.wa{background:#5a4210;border-color:#a87c1c}
+.btn.ghost{background:transparent}
+.btn.sm{padding:5px 10px;font-size:12.5px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.ib{border:0;background:transparent;color:var(--mu);cursor:pointer;font-size:15px;padding:4px 8px;border-radius:6px}.ib:hover{color:var(--bad);background:#2a1414}
+.card{background:linear-gradient(180deg,#0b2c43,#09253a);border:1px solid var(--ln);border-radius:var(--r);padding:16px;margin-bottom:16px}
+.card.p0{padding:0;overflow:hidden}
+.card h4{margin:0 0 12px;font-family:var(--ser);font-size:15px;display:flex;align-items:center;gap:8px}
+.card h4 .sp{flex:1}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+.bar .sp{flex:1}
+.srch{flex:1;min-width:220px}
+.srch input,.inp,.f input,.f select,.f textarea,.bar input,.bar select,.t input,.t select{width:100%;background:#061c2b;border:1px solid var(--ln);border-radius:10px;padding:8px 11px;outline:none;transition:.15s}
+.bar input,.bar select{width:auto}
+.srch input{width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--ac)!important;box-shadow:0 0 0 3px #22d3e622}
+input:disabled,select:disabled,textarea:disabled{opacity:.6}
+textarea{resize:vertical;min-height:62px;line-height:1.6}
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px 14px}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f>span{font-size:12px;color:var(--mu)}
+.f.w2{grid-column:span 2}.f.wf{grid-column:1/-1}
+.sec{border:1px solid var(--ln);border-radius:12px;padding:12px 14px;margin:12px 0;background:#08243699}
+.sec h5{margin:0 0 10px;font-size:13px;color:var(--ac);font-weight:600;display:flex;gap:8px;align-items:center}
+.sec h5 .sp{flex:1}
+.tw{overflow-x:auto}
+.t{width:100%;border-collapse:collapse;font-size:13px}
+.t th{text-align:left;font-weight:600;color:var(--mu);font-size:12px;padding:10px 12px;border-bottom:1px solid var(--ln);background:#072132;white-space:nowrap}
+.t td{padding:9px 12px;border-bottom:1px solid #123d57;vertical-align:middle}
+.t tr:last-child td{border-bottom:0}
+.t tr.click{cursor:pointer}.t tr.click:hover td{background:#0d3450}
+.t .r,.r{text-align:right}
+.t input,.t select{padding:5px 7px;border-radius:7px}
+.sub{color:var(--mu);font-size:12px}
+.empty{text-align:center;color:var(--dim);padding:28px!important}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:2px 9px;border-radius:20px;background:#123d57;color:var(--tx);white-space:nowrap;font-weight:500;line-height:1.6}
+.chip.ac{background:#0b4b5c;color:#7eeefc}.chip.ok{background:#0d4535;color:#7ef0c4}.chip.wa{background:#4b3a0c;color:#ffd977}.chip.bad{background:#4d1717;color:#ffb3b3}.chip.sea{background:#12306b;color:#a9c8ff}.chip.sand{background:#4a3a1a;color:var(--sand)}
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:16px}
+.st{background:linear-gradient(160deg,#0d3550,#0a283e);border:1px solid var(--ln);border-radius:var(--r);padding:14px 16px;cursor:pointer;position:relative;overflow:hidden;transition:.15s}
+.st:hover{border-color:var(--ac2);transform:translateY(-1px)}
+.st::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,var(--ac))}
+.st .l{font-size:12px;color:var(--mu)}.st .v{font-family:var(--mono);font-size:28px;font-weight:600;margin:4px 0 2px}.st .s{font-size:11.5px;color:var(--dim)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid2>.card{margin-bottom:0}
+.grid2+.grid2,.grid2+.card{margin-top:16px}
+.hero{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:18px 20px;border-radius:var(--r);margin-bottom:16px;background:linear-gradient(120deg,#0e4f6e 0%,#0b3554 45%,#0a2740 100%);border:1px solid var(--ln2);position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-40px;bottom:-30px;width:320px;height:120px;opacity:.5;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 60'%3E%3Cpath d='M0 30 Q30 12 60 30 T120 30 T180 30 T240 30 V60 H0Z' fill='%2322d3e6' fill-opacity='.25'/%3E%3C/svg%3E") repeat-x bottom/160px 50px}
+.hero h2{margin:0;font-family:var(--ser);font-size:20px}.hero .sp{flex:1}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--ln);margin-bottom:14px;overflow-x:auto}
+.tabs button{border:0;background:transparent;padding:9px 14px;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ac);border-bottom-color:var(--ac)}
+.alert{border-radius:10px;padding:8px 12px;margin:8px 0;font-size:13px;display:flex;gap:8px;align-items:center}
+.alert.bad{background:#3a1212;border:1px solid #7f2626;color:#ffc4c4}
+.alert.wa{background:#3a2d0c;border:1px solid #7a5d16;color:#ffe2a0}
+.pstrip{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:12px;background:#072132;border:1px solid var(--ln);flex-wrap:wrap}
+.pstrip .av{width:40px;height:40px;font-size:16px}
+.pstrip b{font-size:15px}
+/* beds */
+.beds{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.bed{border:1px dashed var(--ln2);border-radius:12px;padding:10px 12px;cursor:pointer;min-height:92px;transition:.15s;background:#071f30}
+.bed:hover{border-color:var(--ac)}
+.bed .no{font-family:var(--mono);font-size:12px;color:var(--dim)}
+.bed.occ{border-style:solid;background:linear-gradient(160deg,#0f3f5c,#0b2c43);border-color:#2a7aa3}
+.bed.occ .no{color:var(--ac)}
+.bed b{display:block;font-size:13.5px;margin:3px 0 1px}
+.prog{height:8px;border-radius:6px;background:#0a2234;overflow:hidden}.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--sea));border-radius:6px}
+/* timeline */
+.tl{display:flex;gap:12px;margin-bottom:10px}
+.tl-d{width:86px;flex:none;font-size:12px;color:var(--mu);text-align:right;padding-top:10px}
+.tl-c{flex:1;border:1px solid var(--ln);border-left:3px solid var(--ac);border-radius:10px;padding:10px 12px;background:#08243a;cursor:pointer}
+.tl-c.ipd{border-left-color:var(--sand)}
+.tl-c:hover{background:#0c3048}
+.dxs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.dxs .chip button{border:0;background:none;color:inherit;cursor:pointer;padding:0 0 0 3px}
+.labs{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px}
+.labs label{display:flex;gap:7px;align-items:center;font-size:13px;padding:5px 8px;border-radius:8px;background:#061c2b;border:1px solid var(--ln);cursor:pointer}
+.radios{display:flex;gap:8px;flex-wrap:wrap}
+.radios label{display:flex;gap:6px;align-items:center;padding:6px 12px;border-radius:9px;border:1px solid var(--ln);background:#061c2b;cursor:pointer}
+.tot{margin-top:12px;border-top:1px solid var(--ln);padding-top:10px}
+.tot div{display:flex;justify-content:space-between;padding:3px 0;color:var(--mu)}
+.tot .big{color:var(--tx);font-size:18px;font-weight:700}
+.note{border-left:3px solid var(--ac2);padding:6px 10px;margin:8px 0;background:#08243a;border-radius:0 8px 8px 0}
+/* attendance grid */
+.ag{border-collapse:collapse;font-size:11.5px}
+.ag th,.ag td{border:1px solid #143f59;padding:4px 5px;text-align:center;min-width:24px}
+.ag td.n{text-align:left;white-space:nowrap;min-width:140px}
+.ag th.sun{color:var(--coral)}
+.c-p{color:var(--ok)}.c-l{color:var(--wa);font-weight:700}.c-v{color:var(--sea);font-weight:700}.c-a{color:var(--bad)}
+/* modal */
+.mbk{position:fixed;inset:0;background:#010a11cc;backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:4vh 12px;z-index:100;overflow-y:auto;overscroll-behavior:contain}
+.mdl{background:linear-gradient(180deg,#0c2e46,#082338);border:1px solid var(--ln2);border-radius:16px;width:100%;max-width:660px;box-shadow:0 30px 80px -20px #000;animation:mi .18s ease-out}
+.mdl.sm{max-width:420px}.mdl.lg{max-width:860px}.mdl.xl{max-width:1120px}
+@keyframes mi{from{transform:translateY(10px);opacity:0}}
+.mh{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--ln)}
+.mh h3{margin:0;flex:1;font-family:var(--ser);font-size:16px}
+.mh .x{border:0;background:#0a2234;color:var(--mu);width:32px;height:32px;border-radius:9px;cursor:pointer}
+.mb{padding:16px 18px}
+.mf{display:flex;justify-content:flex-end;gap:8px;padding:12px 18px;border-top:1px solid var(--ln);flex-wrap:wrap}
+.mf .sp{flex:1}
+.plist{max-height:52vh;overflow-y:auto;margin-top:10px}
+.pi{padding:9px 12px;border-radius:9px;cursor:pointer;border:1px solid transparent}
+.pi:hover{background:#0c3048;border-color:var(--ln2)}
+#toasts{position:fixed;right:16px;bottom:16px;z-index:300;display:flex;flex-direction:column;gap:8px}
+.toast{background:#0d3550;border:1px solid var(--ln2);border-left:4px solid var(--ac);padding:10px 14px;border-radius:10px;box-shadow:0 10px 30px -10px #000;max-width:340px;animation:mi .2s}
+.toast.ok{border-left-color:var(--ok)}.toast.bad{border-left-color:var(--bad)}.toast.wa{border-left-color:var(--wa)}
+/* lock */
+#lock{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;background:radial-gradient(900px 500px at 50% -10%,#0f5677 0%,transparent 60%),linear-gradient(180deg,#04263b,#021019)}
+#lock::after{content:'';position:fixed;left:0;right:0;bottom:0;height:180px;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 60'%3E%3Cpath d='M0 30 Q30 12 60 30 T120 30 T180 30 T240 30 V60 H0Z' fill='%230ea5c6' fill-opacity='.18'/%3E%3Cpath d='M0 42 Q30 26 60 42 T120 42 T180 42 T240 42 V60 H0Z' fill='%2322d3e6' fill-opacity='.14'/%3E%3C/svg%3E") repeat-x bottom/360px 90px}
+.lk{width:100%;max-width:360px;text-align:center;position:relative;z-index:1}
+.lk-brand{display:flex;gap:12px;align-items:center;justify-content:center;margin-bottom:18px}
+.lk-brand .logo{width:52px;height:52px}
+.lk-h{font-family:var(--ser);font-size:19px;font-weight:700;text-align:left}
+.lk-s{font-size:12px;color:var(--mu);text-align:left}
+.lk-tabs{display:flex;background:#06202f;border:1px solid var(--ln);border-radius:12px;padding:4px;margin-bottom:14px}
+.lk-tabs button{flex:1;border:0;background:transparent;padding:9px;border-radius:9px;cursor:pointer;color:var(--mu)}
+.lk-tabs button.on{background:linear-gradient(135deg,#14b8cf,#2563eb);color:#fff}
+.lk-clock{font-size:40px;font-weight:600;letter-spacing:1px}
+.lk-date{color:var(--mu);font-size:13px;margin-bottom:10px}
+.lk-msg{color:var(--mu);font-size:13px;margin:6px 0}
+.dots{display:flex;gap:12px;justify-content:center;margin:12px 0 16px;min-height:16px}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ln2)}
+.dots i.on{background:var(--ac);border-color:var(--ac);box-shadow:0 0 10px var(--ac)}
+.dots.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad button{height:58px;border-radius:14px;border:1px solid var(--ln);background:#0a2a40cc;font-size:22px;font-family:var(--mono);cursor:pointer;transition:.1s}
+.pad button:active{transform:scale(.95);background:#0f4a66}
+.pad button.ok{background:linear-gradient(135deg,#14b8cf,#2563eb);border-color:transparent;font-size:18px}
+.lk-res{min-height:56px;margin-top:14px}
+.res{padding:12px;border-radius:12px;font-size:15px;animation:mi .2s}
+.res.ok{background:#0d4535;border:1px solid #1c8b6c}.res.wa{background:#4b3a0c;border:1px solid #a87c1c}.res.bad{background:#4d1717;border:1px solid #9b2c2c}
+.lk-foot{margin-top:10px;font-size:11.5px;color:var(--dim)}
+@media(max-width:900px){
+ #side{position:fixed;z-index:60;left:0;top:0;bottom:0;transform:translateX(-102%);transition:transform .25s}
+ body.nav #side{transform:none;box-shadow:20px 0 60px #000a}
+ #hb{display:inline-flex}
+ #top{padding:10px 12px}
+ #view{padding:14px 12px}
+ .grid2{grid-template-columns:1fr}
+ .user .nm,#ttl small,.pill .tx{display:none}
+ .f.w2{grid-column:auto}
+ .tl-d{width:64px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+ <aside id="side">
+  <div class="brand"><div class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v10M7 10h10"/><path d="M3 19c2-1.6 4-1.6 6 0s4 1.6 6 0 4-1.6 6 0" stroke-width="1.8"/></svg></div>
+   <div><b id="sbHosp">មន្ទីរពេទ្យខេត្តកែប</b><small>HMS · EMR · Attendance</small></div></div>
+  <nav id="nav"></nav>
+ </aside>
+ <main id="main">
+  <header id="top">
+   <button class="btn ghost sm" id="hb" onclick="document.body.classList.toggle('nav')">☰</button>
+   <div id="ttl"></div>
+   <button class="pill" id="sync" onclick="sync(true)"></button>
+   <button class="btn sm" onclick="punch(ME)" title="ចុះវត្តមាន">🕘 <span class="tx">វត្តមាន</span></button>
+   <div class="user" id="user"></div>
+   <button class="btn sm ghost" onclick="lock()" title="ចាក់សោ">🔒</button>
+  </header>
+  <section id="view"></section>
+ </main>
+</div>
+
+<div id="lock">
+ <div class="lk">
+  <div class="lk-brand"><div class="logo"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v10M7 10h10"/><path d="M3 19c2-1.6 4-1.6 6 0s4 1.6 6 0 4-1.6 6 0" stroke-width="1.8"/></svg></div>
+   <div><div class="lk-h" id="lkHosp"></div><div class="lk-s">Hospital Management System · EMR</div></div></div>
+  <div class="lk-clock mono" id="lkClock">--:--</div>
+  <div class="lk-date" id="lkDate"></div>
+  <div class="lk-tabs"><button id="lkT1" onclick="setLockMode('login')">🔐 ចូលប្រព័ន្ធ</button><button id="lkT2" onclick="setLockMode('punch')">🕘 ចុះវត្តមាន</button></div>
+  <div class="lk-msg" id="lkMsg"></div>
+  <div class="dots" id="lkDots"></div>
+  <div class="pad" id="lkPad"></div>
+  <div class="lk-res" id="lkRes"></div>
+  <div class="lk-foot">Kep Provincial Hospital · HMS</div>
+ </div>
+</div>
+<div id="toasts"></div>
+<datalist id="icdl"></datalist>
+
+<script>
+/* ================= CORE ================= */
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const today=()=>ymd(new Date());
+const nowHM=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());};
+const fmtD=s=>{if(!s)return'';const a=String(s).slice(0,10).split('-');return a.length<3?s:a[2]+'/'+a[1]+'/'+a[0];};
+const fmtDT=t=>{if(!t)return'';const d=new Date(t);return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear()+' '+pad(d.getHours())+':'+pad(d.getMinutes());};
+const money=n=>Math.round(+n||0).toLocaleString('en-US')+' ៛';
+const uid=p=>p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const minOf=t=>{const m=/^(\d{1,2}):(\d{2})/.exec(t||'');return m?(+m[1])*60+(+m[2]):0;};
+const hrs=(a,b)=>a&&b?Math.max(0,(minOf(b)-minOf(a))/60):0;
+const KD=['អាទិត្យ','ចន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'];
+const KM=['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'];
+const khDate=d=>`ថ្ងៃ${KD[d.getDay()]} ទី${d.getDate()} ខែ${KM[d.getMonth()]} ឆ្នាំ${d.getFullYear()}`;
+
+const COLL=['patients','visits','admissions','labs','drugs','stockMoves','invoices','staff','attendance','settings'];
+const ROLES={admin:'អ្នកគ្រប់គ្រង',doctor:'វេជ្ជបណ្ឌិត',nurse:'គិលានុបដ្ឋាក',pharmacist:'ឱសថការី',lab:'អ្នកពិសោធន៍',cashier:'បេឡាករ',staff:'បុគ្គលិកផ្សេងៗ'};
+const PAY={cash:'សាច់ប្រាក់ (Cash)',hef:'មូលនិធិសមធម៌ (HEF)',nssf:'ប.ស.ស (NSSF)',free:'ឥតគិតថ្លៃ (Free)'};
+const OUTC={recovered:'ជាសះស្បើយ',improved:'ធូរស្រាល',referred:'បញ្ជូនបន្ត',lama:'ចេញមុនពេល (LAMA)',died:'ស្លាប់'};
+const FREQ=[['1','១ដង/ថ្ងៃ',1],['2','ព្រឹក-ល្ងាច',2],['3','ព្រឹក-ថ្ងៃ-ល្ងាច',3],['4','៤ដង/ថ្ងៃ',4],['n','យប់មុនគេង',1],['p','ពេលចាំបាច់ PRN',1]];
+const VST={waiting:['រង់ចាំ','wa'],triage:['វាស់រួច · រង់ចាំវេជ្ជ.','sea'],done:['រួចរាល់','ok']};
+const ICD=[['A09','រាគ/រលាកក្រពះពោះវៀន Gastroenteritis'],['A01.0','គ្រុនពោះវៀន Typhoid fever'],['A15.0','របេងសួត Pulmonary TB'],['A90','គ្រុនឈាម Dengue fever'],['A91','គ្រុនឈាមហូរឈាម DHF'],['B54','គ្រុនចាញ់ Malaria'],['B50.9','គ្រុនចាញ់ P. falciparum'],['B51.9','គ្រុនចាញ់ P. vivax'],['B86','កមរមាស់ Scabies'],['B35.4','ផ្សិតស្បែក Tinea corporis'],['J00','ផ្តាសាយ Common cold'],['J02.9','រលាកបំពង់ក Pharyngitis'],['J03.9','រលាកទន្សិល Tonsillitis'],['J06.9','រលាកផ្លូវដង្ហើមខាងលើ URTI'],['J18.9','រលាកសួត Pneumonia'],['J20.9','រលាកទងសួត Bronchitis'],['J45.9','ហឺត Asthma'],['J44.9','COPD'],['H10.9','រលាកភ្នែក Conjunctivitis'],['H66.9','រលាកត្រចៀកកណ្តាល Otitis media'],['K02.9','ពុកធ្មេញ Dental caries'],['K29.7','រលាកក្រពះ Gastritis'],['K35.8','រលាកខ្នែងពោះវៀន Appendicitis'],['K59.0','ទល់លាមក Constipation'],['K80.2','គ្រួសក្នុងថង់ទឹកប្រមាត់ Gallstone'],['N39.0','រលាកផ្លូវទឹកនោម UTI'],['N76.0','រលាកទ្វារមាស Vaginitis'],['O80','សម្រាលធម្មតា Normal delivery'],['O14.9','Pre-eclampsia'],['Z34.9','ពិនិត្យផ្ទៃពោះ ANC'],['I10','លើសសម្ពាធឈាម Hypertension'],['I50.9','ខ្សោយបេះដូង Heart failure'],['I63.9','ដាច់សរសៃឈាមខួរក្បាល Stroke'],['E11.9','ទឹកនោមផ្អែមប្រភេទ២ T2DM'],['E86','ខ្វះជាតិទឹក Dehydration'],['E43','កង្វះអាហារូបត្ថម្ភធ្ងន់ Severe malnutrition'],['D64.9','ស្លេកស្លាំង Anaemia'],['G40.9','ឆ្កួតជ្រូក Epilepsy'],['G43.9','ឈឺក្បាលប្រកាំង Migraine'],['R50.9','គ្រុនក្តៅ Fever'],['R51','ឈឺក្បាល Headache'],['M54.5','ឈឺខ្នងផ្នែកក្រោម Low back pain'],['M79.1','ឈឺសាច់ដុំ Myalgia'],['M17.9','រលាកសន្លាក់ជង្គង់ Knee OA'],['L03.9','រលាកជាលិកាក្រោមស្បែក Cellulitis'],['L30.9','រលាកស្បែក Dermatitis'],['S06.0','ប៉ះទង្គិចខួរក្បាល Concussion'],['T14.1','របួសចំហ Open wound'],['T63.0','ពស់ចឹក Snake bite'],['W54','ឆ្កែខាំ Dog bite'],['F32.9','បាក់ទឹកចិត្ត Depression'],['Z00.0','ពិនិត្យសុខភាពទូទៅ Check-up']];
+const AGE=[['<1',0,1],['1–4',1,5],['5–14',5,15],['15–24',15,25],['25–49',25,50],['50–64',50,65],['65+',65,200]];
+
+/* storage: localStorage with in-memory fallback (works in artifact / browser / Google Sites) */
+const KEY='kephms_v1',MEM={};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return MEM[k]??null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){MEM[k]=v}}};
+const DEFAULT_GAS='https://script.google.com/macros/s/AKfycbxDdRTSjVNEoQH_ZOEX-UbRIGARuxRrh_hGJO6ZEUpBhO7LwBAczr1vCbeu6Dhf7Yk7qg/exec';
+let DB={},DIRTY={},META={lastPull:0,lastSync:0,gas:''};
+function load(){try{const j=JSON.parse(store.get(KEY)||'null');if(j){DB=j.DB||{};DIRTY=j.DIRTY||{};META=Object.assign(META,j.META||{});}}catch(e){}COLL.forEach(c=>{DB[c]=DB[c]||{};DIRTY[c]=DIRTY[c]||{};});if(!META.gas)META.gas=DEFAULT_GAS;}
+let _pt;function persist(){clearTimeout(_pt);_pt=setTimeout(flush,200);}
+function flush(){clearTimeout(_pt);store.set(KEY,JSON.stringify({DB,DIRTY,META}));}
+const all=c=>Object.values(DB[c]).filter(o=>!o.deleted);
+const get=(c,id)=>{const o=id&&DB[c][id];return o&&!o.deleted?o:null;};
+function put(c,o){if(!o.id)o.id=uid(c.slice(0,3));if(!o.createdAt)o.createdAt=Date.now();o.updatedAt=Math.max(Date.now(),(o.updatedAt||0)+1);if(ME&&!o.by)o.by=ME.id;DB[c][o.id]=o;DIRTY[c][o.id]=1;persist();schedSync();return o;}
+function del(c,id){const o=DB[c][id];if(o){o.deleted=true;put(c,o);}}
+const S=()=>DB.settings.main||{};
+const pending=()=>COLL.reduce((n,c)=>n+Object.keys(DIRTY[c]||{}).length,0);
+
+function seed(){
+ const add=(c,o)=>{if(!DB[c][o.id]){o.createdAt=1;o.updatedAt=1;DB[c][o.id]=o;}};
+ add('settings',{id:'main',hospKm:'មន្ទីរពេទ្យខេត្តកែប',hospEn:'Kep Provincial Hospital',addr:'ខេត្តកែប',phone:'',consultFee:5000,bedFee:10000,lateGrace:10,lockMin:20,
+  wards:[{code:'MED',name:'ជំងឺទូទៅ (Medicine)',beds:10},{code:'PED',name:'កុមារ (Pediatrics)',beds:6},{code:'MAT',name:'សម្ភព (Maternity)',beds:6},{code:'SUR',name:'វះកាត់ (Surgery)',beds:6}],
+  labCat:[['CBC','Complete Blood Count','lab',15000,'',''],['GLU','Blood Glucose','lab',5000,'mg/dL','70–110'],['HB','Hemoglobin','lab',5000,'g/dL','12–16'],['MAL','Malaria RDT','lab',0,'','Negative'],['DEN','Dengue NS1/IgM','lab',20000,'','Negative'],['HIV','HIV Rapid Test','lab',0,'','Negative'],['HBS','HBsAg','lab',8000,'','Negative'],['UA','Urinalysis','lab',8000,'',''],['UPT','Urine Pregnancy Test','lab',4000,'',''],['CRE','Creatinine','lab',10000,'mg/dL','0.6–1.3'],['ALT','ALT (SGPT)','lab',10000,'U/L','<40'],['CXR','Chest X-ray','imaging',25000,'',''],['XR','X-ray (other)','imaging',25000,'',''],['USA','Ultrasound Abdomen','imaging',20000,'',''],['USO','Ultrasound OB','imaging',15000,'',''],['ECG','ECG','imaging',15000,'','']].map(a=>({code:a[0],name:a[1],cat:a[2],price:a[3],unit:a[4],ref:a[5]}))});
+ add('staff',{id:'staff_admin',name:'Admin',sex:'M',role:'admin',dept:'រដ្ឋបាល',phone:'',pin:'230101',shiftStart:'07:30',shiftEnd:'17:00',active:true});
+ [['Paracetamol 500mg','tab','គ្រាប់',100,200],['Amoxicillin 500mg','cap','គ្រាប់',300,200],['Metronidazole 250mg','tab','គ្រាប់',150,100],['Ibuprofen 400mg','tab','គ្រាប់',150,100],['ORS','sachet','កញ្ចប់',1000,50],['Omeprazole 20mg','cap','គ្រាប់',300,100],['Cotrimoxazole 480mg','tab','គ្រាប់',150,100],['Metformin 500mg','tab','គ្រាប់',150,100],['Amlodipine 5mg','tab','គ្រាប់',200,100],['Ciprofloxacin 500mg','tab','គ្រាប់',400,100],['Chlorpheniramine 4mg','tab','គ្រាប់',100,100],['Vitamin B complex','tab','គ្រាប់',100,100],['Ferrous + Folic acid','tab','គ្រាប់',100,100],['Normal Saline 0.9% 500ml','inj','ដប',5000,20],['Ceftriaxone 1g','inj','ដប',6000,20],['Diazepam 5mg','tab','គ្រាប់',100,50]]
+  .forEach((d,i)=>add('drugs',{id:'drug_s'+(i+1),name:d[0],form:d[1],unit:d[2],price:d[3],min:d[4],expiry:''}));
+ const ad=DB.staff.staff_admin;if(ad&&ad.pin==='1234'&&ad.updatedAt===1)ad.pin='230101';
+}
+
+/* ================= SYNC (Google Sheets via Apps Script) ================= */
+let syncing=false,SYNC_ST='off',_st;
+function schedSync(){updSync();clearTimeout(_st);if(META.gas)_st=setTimeout(()=>sync(),2500);}
+async function sync(manual){
+ const url=(META.gas||'').trim();
+ if(!url){SYNC_ST='off';updSync();if(manual)toast('សូមដាក់ Apps Script URL នៅទំព័រ ការកំណត់','wa');return;}
+ if(syncing)return;syncing=true;SYNC_ST='busy';updSync();
+ const changes={},sent={};
+ COLL.forEach(c=>{const ids=Object.keys(DIRTY[c]);if(ids.length){changes[c]=ids.map(id=>DB[c][id]).filter(Boolean);sent[c]={};ids.forEach(id=>{if(DB[c][id])sent[c][id]=DB[c][id].updatedAt;});}});
+ try{
+  const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'sync',changes,since:Math.max(0,(META.lastPull||0)-86400000)})});
+  const j=await r.json();if(!j.ok)throw new Error(j.error||'server error');
+  COLL.forEach(c=>Object.keys(sent[c]||{}).forEach(id=>{if(DB[c][id]&&DB[c][id].updatedAt===sent[c][id])delete DIRTY[c][id];}));
+  let changed=0;
+  Object.keys(j.data||{}).forEach(c=>{if(!DB[c])return;(j.data[c]||[]).forEach(o=>{if(!o||!o.id)return;const cur=DB[c][o.id];if(!cur||(+o.updatedAt||0)>(+cur.updatedAt||0)){DB[c][o.id]=o;delete DIRTY[c][o.id];changed++;}});});
+  META.lastPull=Date.now();META.lastSync=Date.now();SYNC_ST='ok';flush();
+  if(changed){$('#lkHosp').textContent=S().hospKm||'';$('#sbHosp').textContent=S().hospKm||'';if(ME){if(ME)ME=get('staff',ME.id)||ME;const a=document.activeElement;if(!MS.length&&!(a&&$('#view').contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)))render();}}
+  if(manual)toast(`Sync រួចរាល់ · បានទទួល ${changed} កំណត់ត្រា`,'ok');
+ }catch(e){SYNC_ST='err';if(manual)toast('Sync បរាជ័យ៖ '+e.message,'bad');}
+ finally{syncing=false;updSync();}
+}
+function updSync(){const el=$('#sync');if(!el)return;const n=pending();el.className='pill '+SYNC_ST;
+ const t=SYNC_ST==='ok'?'Synced '+(META.lastSync?fmtDT(META.lastSync).slice(11):''):SYNC_ST==='busy'?'កំពុង Sync…':SYNC_ST==='err'?'Sync បរាជ័យ':'Offline';
+ el.innerHTML=`<i></i><span class="tx">${t}</span>${n?`<span class="chip wa mono">${n}</span>`:''}`;}
+
+/* ================= UI HELPERS ================= */
+function toast(m,t){const e=document.createElement('div');e.className='toast '+(t||'');e.textContent=m;$('#toasts').appendChild(e);setTimeout(()=>e.remove(),3400);}
+const MS=[];
+function openModal(title,body,foot,cls){const w=document.createElement('div');w.className='mbk';w.innerHTML=`<div class="mdl ${cls||''}"><div class="mh"><h3>${title}</h3><button class="x" onclick="closeModal()">✕</button></div><div class="mb">${body}</div>${foot?`<div class="mf">${foot}</div>`:''}</div>`;document.body.appendChild(w);MS.push(w);return w;}
+function closeModal(){const w=MS.pop();if(w)w.remove();}
+const topM=()=>MS[MS.length-1]||document;
+const mq=s=>topM().querySelector(s);
+const mv=s=>{const e=mq(s);return e?String(e.value).trim():'';};
+function ask(msg,ok,danger){return new Promise(res=>{const w=openModal('បញ្ជាក់',`<div style="line-height:1.8">${msg}</div>`,`<button class="btn ghost" data-n>បោះបង់</button><button class="btn ${danger?'bad':'pri'}" data-y>${ok||'យល់ព្រម'}</button>`,'sm');w.querySelector('[data-n]').onclick=()=>{closeModal();res(false)};w.querySelector('[data-y]').onclick=()=>{closeModal();res(true)};});}
+const fld=(l,inp,cls)=>`<label class="f ${cls||''}"><span>${l}</span>${inp}</label>`;
+const inp=(id,v,a)=>`<input id="${id}" value="${esc(v??'')}" ${a||''}>`;
+const ta=(id,v,a)=>`<textarea id="${id}" ${a||''}>${esc(v??'')}</textarea>`;
+const sel=(id,map,v,a)=>`<select id="${id}" ${a||''}>${(Array.isArray(map)?map:Object.entries(map)).map(([k,l])=>`<option value="${esc(k)}" ${String(k)===String(v??'')?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+const chip=(t,c)=>`<span class="chip ${c||''}">${t}</span>`;
+const SAVE_FOOT=id=>`<button class="btn ghost" onclick="closeModal()">បោះបង់</button><button class="btn pri" id="${id}">💾 រក្សាទុក</button>`;
+function download(name,text,type){try{const b=new Blob([text],{type:type||'text/plain'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}catch(e){openModal('ចម្លងទិន្នន័យ',`<textarea style="width:100%;height:300px">${esc(text)}</textarea>`);}}
+const csv=rows=>'\ufeff'+rows.map(r=>r.map(x=>`"${String(x??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+
+/* domain helpers */
+function ageOf(p,at){if(!p||!p.dob)return 0;const t=at?new Date(at):new Date();return Math.max(0,(t-new Date(p.dob))/(365.25*864e5));}
+function ageTxt(p,at){const a=ageOf(p,at);return a<1?Math.floor(a*12)+' ខែ':Math.floor(a)+' ឆ្នាំ';}
+const sexTxt=s=>s==='F'?'ស្រី':'ប្រុស';
+const sexAge=(p,at)=>p?`${sexTxt(p.sex)} · ${ageTxt(p,at)}`:'';
+const covChips=p=>(p.hef?chip('HEF','sand'):'')+(p.nssf?chip('NSSF','sea'):'');
+const pName=id=>{const p=get('patients',id);return p?p.name:'—';};
+const staffName=id=>{const s=DB.staff[id];return s?s.name:'—';};
+const dxTxt=dx=>(dx||[]).map(d=>(d.code?`<b class="mono">${esc(d.code)}</b> `:'')+esc(d.name)).join('; ')||'<span class="sub">—</span>';
+const dxPlain=dx=>(dx||[]).map(d=>(d.code?d.code+' ':'')+d.name).join('; ');
+const vitTxt=v=>{if(!v)return'';const a=[];if(v.bp)a.push('BP '+v.bp);if(v.pulse)a.push('P '+v.pulse);if(v.temp)a.push('T '+v.temp+'°');if(v.rr)a.push('RR '+v.rr);if(v.spo2)a.push('SpO₂ '+v.spo2+'%');if(v.wt)a.push(v.wt+'kg');return a.join(' · ');};
+const labCat=()=>S().labCat||[];
+const freqL=f=>(FREQ.find(x=>x[0]===f)||[,'']) [1];
+const rxHow=r=>`ម្តង ${r.dose} ${esc(r.unit||'')} · ${freqL(r.freq)}${r.note?' · '+esc(r.note):''}`;
+function allBeds(){return (S().wards||[]).flatMap(w=>Array.from({length:+w.beds||0},(_,i)=>({id:w.code+'-'+pad(i+1),ward:w.code,wname:w.name,no:i+1})));}
+const bedOcc=()=>{const m={};all('admissions').filter(a=>a.status==='admitted').forEach(a=>m[a.bedId]=a);return m;};
+const losDays=a=>Math.max(1,Math.ceil(((a.status==='discharged'?a.dischargeAt:Date.now())-a.admitAt)/864e5));
+function stockMap(){const m={};all('stockMoves').forEach(x=>m[x.drugId]=(m[x.drugId]||0)+(+x.qty||0));return m;}
+function nextMRN(){const y=String(new Date().getFullYear()).slice(2);let mx=0;Object.values(DB.patients).forEach(p=>{const m=/^HN(\d{2})-(\d+)$/.exec(p.mrn||'');if(m&&m[1]===y)mx=Math.max(mx,+m[2]);});return 'HN'+y+'-'+String(mx+1).padStart(5,'0');}
+const invNo=i=>String(i.id).slice(-6).toUpperCase();
+function ptStrip(p,extra){if(!p)return'';return `<div class="pstrip"><div class="av">${esc((p.name||'?').trim()[0]||'?')}</div><div style="flex:1;min-width:180px"><b>${esc(p.name)}</b> <span class="mono sub">${esc(p.mrn)}</span><div class="sub">${sexAge(p)} · ${esc(p.phone||'')} ${p.blood?'· ក្រុមឈាម '+esc(p.blood):''}</div></div>${covChips(p)}${extra||''}</div>${p.allergies?`<div class="alert bad">⚠️ អាឡែកហ្ស៊ី៖ <b>${esc(p.allergies)}</b></div>`:''}${p.chronic?`<div class="alert wa">🩺 ជំងឺរ៉ាំរ៉ៃ៖ ${esc(p.chronic)}</div>`:''}`;}
+
+/* ================= PRINT (hidden iframe – works inside Google Sites) ================= */
+function printHTML(body,size){
+ const rc=size==='80mm';
+ const css=`@page{size:${rc?'80mm auto':size==='A5'?'A5':size==='A4L'?'A4 landscape':'A4'};margin:${rc?'3mm':'11mm'}}
+ body{font-family:'Noto Sans Khmer',sans-serif;color:#111;font-size:${rc?'11px':'12.5px'};line-height:1.6;margin:0}
+ .ser,h2,.ph-k{font-family:'Noto Serif Khmer',serif}
+ .ph-k{text-align:center;font-weight:700;font-size:14px;line-height:1.5}.ph-k small{font-size:12px}
+ .ph-row{display:flex;justify-content:space-between;align-items:flex-end;margin-top:4px}
+ h2{text-align:center;font-size:${rc?'13px':'17px'};margin:10px 0 8px}
+ table{width:100%;border-collapse:collapse;margin:6px 0}th,td{border:1px solid #555;padding:3px 6px;text-align:left;vertical-align:top}th{background:#e6f3f6}
+ .kv{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin:6px 0}
+ .sig{display:flex;justify-content:flex-end;margin-top:22px;text-align:center}.sig div{min-width:220px}
+ .r{text-align:right}.c{text-align:center}.mono{font-family:monospace}.b{font-weight:700}
+ .rc table td,.rc table th{border:0;border-bottom:1px dashed #999;padding:2px 0;background:none}
+ .rc .c{text-align:center}.sec{margin-top:8px}.sec h3{font-size:13px;margin:8px 0 3px;border-bottom:1px solid #999}
+ .ag th,.ag td{font-size:9.5px;padding:1px 2px;text-align:center}.ag td.n{text-align:left;white-space:nowrap}`;
+ let f=document.getElementById('prf');if(f)f.remove();
+ f=document.createElement('iframe');f.id='prf';f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0';document.body.appendChild(f);
+ const d=f.contentWindow.document;d.open();
+ d.write(`<!doctype html><html><head><meta charset="utf-8"><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;700&family=Noto+Serif+Khmer:wght@700&display=swap" rel="stylesheet"><style>${css}</style></head><body class="${rc?'rc':''}">${body}</body></html>`);d.close();
+ setTimeout(()=>{try{f.contentWindow.focus();f.contentWindow.print();}catch(e){toast('មិនអាចបោះពុម្ពបាន','bad');}},800);
+}
+function phead(title){const s=S();return `<div class="ph-k">ព្រះរាជាណាចក្រកម្ពុជា<br><small>ជាតិ សាសនា ព្រះមហាក្សត្រ</small></div><div class="ph-row"><div><b class="ser">${esc(s.hospKm)}</b><br>${esc(s.hospEn)}<br><small>${esc(s.addr||'')} ${esc(s.phone||'')}</small></div><div class="r"><small>បោះពុម្ព ${fmtDT(Date.now())}</small></div></div><h2>${title}</h2>`;}
+function ptBlock(p,at){return `<div class="kv"><div>ឈ្មោះ៖ <b>${esc(p.name)}</b> ${esc(p.nameEn||'')}</div><div>លេខ HN៖ <b class="mono">${esc(p.mrn)}</b></div><div>ភេទ/អាយុ៖ ${sexAge(p,at)}</div><div>ទូរស័ព្ទ៖ ${esc(p.phone||'')}</div><div>អាសយដ្ឋាន៖ ${esc(p.addr||'')}</div><div>អាឡែកហ្ស៊ី៖ <b>${esc(p.allergies||'គ្មាន')}</b></div></div>`;}
+function sig(role,name){const d=new Date();return `<div class="sig"><div>${esc(S().addr||'')} ថ្ងៃទី ${d.getDate()} ខែ${KM[d.getMonth()]} ឆ្នាំ ${d.getFullYear()}<br><b>${role}</b><br><br><br><br><b>${esc(name||'')}</b></div></div>`;}
+
+/* ================= AUTH / LOCK / ATTENDANCE KIOSK ================= */
+let ME=null,lockMode='login',pinBuf='',lastAct=Date.now(),curPage='dash',curArg=null;
+const bump=()=>{lastAct=Date.now();};
+function buildPad(){$('#lkPad').innerHTML=['1','2','3','4','5','6','7','8','9','C','0','<'].map(k=>`<button onclick="padKey('${k}')">${k==='<'?'⌫':k}</button>`).join('')+`<button class="ok" style="grid-column:1/-1;height:50px" onclick="padKey('OK')">✓ បញ្ជាក់</button>`;}
+function setLockMode(m){lockMode=m;pinBuf='';$('#lkT1').classList.toggle('on',m==='login');$('#lkT2').classList.toggle('on',m==='punch');$('#lkMsg').textContent=m==='login'?'បញ្ចូលលេខ PIN ដើម្បីចូលប្រព័ន្ធ':'បញ្ចូលលេខ PIN ដើម្បីចុះវត្តមាន ចូល / ចេញ';drawDots();}
+function padKey(k){if(k==='C')pinBuf='';else if(k==='<')pinBuf=pinBuf.slice(0,-1);else if(k==='OK'){submitPin();return;}else if(pinBuf.length<6)pinBuf+=k;drawDots();}
+function drawDots(){$('#lkDots').innerHTML=Array.from({length:Math.max(4,pinBuf.length)},(_,i)=>`<i class="${i<pinBuf.length?'on':''}"></i>`).join('');}
+function submitPin(){const p=pinBuf;pinBuf='';drawDots();if(!p)return;const st=all('staff').find(s=>s.active!==false&&String(s.pin)===p);
+ if(!st){const d=$('#lkDots');d.classList.remove('shake');void d.offsetWidth;d.classList.add('shake');kioskMsg('❌ លេខ PIN មិនត្រឹមត្រូវ','bad');return;}
+ if(lockMode==='login'){ME=st;$('#lock').style.display='none';$('#lkRes').innerHTML='';bump();buildNav();go(canSee(curPage)?curPage:'dash',curArg);toast('សូមស្វាគមន៍ '+st.name,'ok');}
+ else punch(st,true);}
+let _km;function kioskMsg(m,c){$('#lkRes').innerHTML=`<div class="res ${c}">${m}</div>`;clearTimeout(_km);_km=setTimeout(()=>{$('#lkRes').innerHTML='';},5500);}
+function lock(){ME=null;while(MS.length)closeModal();document.body.classList.remove('nav');$('#lock').style.display='flex';setLockMode('login');}
+function clock(){const d=new Date();$('#lkClock').textContent=pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());$('#lkDate').textContent=khDate(d);}
+function punch(st,kiosk){if(!st)return;const d=today(),t=nowHM();let r=all('attendance').find(a=>a.staffId===st.id&&a.date===d),msg,cls='ok';
+ if(!r){const late=minOf(t)>minOf(st.shiftStart||'07:30')+(+S().lateGrace||0);r=put('attendance',{id:'att_'+st.id+'_'+d,staffId:st.id,date:d,in:t,out:'',status:late?'late':'present',src:kiosk?'kiosk':'app'});msg=`✅ <b>${esc(st.name)}</b><br>ចូលធ្វើការ ម៉ោង <b class="mono">${t}</b>${late?' · យឺត':''}`;if(late)cls='wa';}
+ else if(r.status==='leave'||r.status==='absent'){msg=`ថ្ងៃនេះ ${esc(st.name)} ត្រូវបានកត់ត្រាថា ${r.status==='leave'?'ច្បាប់':'អវត្តមាន'}`;cls='wa';}
+ else if(!r.out){if(minOf(t)-minOf(r.in)<5){msg=`${esc(st.name)} ទើបតែចុះចូលម៉ោង ${r.in}`;cls='wa';}else{r.out=t;put('attendance',r);const early=minOf(t)<minOf(st.shiftEnd||'17:00');msg=`👋 <b>${esc(st.name)}</b><br>ចេញម៉ោង <b class="mono">${t}</b> · ${hrs(r.in,r.out).toFixed(1)} ម៉ោង${early?' · ចេញមុនម៉ោង':''}`;}}
+ else{msg=`${esc(st.name)} បានចុះវត្តមានរួចហើយ (${r.in} – ${r.out})`;cls='wa';}
+ if(kiosk)kioskMsg(msg,cls);else{toast(msg.replace(/<[^>]+>/g,' ').replace(/\s+/g,' '),cls);render();}}
+
+/* ================= NAV ================= */
+const IC={dash:'<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',patients:'<circle cx="9" cy="7" r="4"/><path d="M1 21v-2a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4v2M16 3.1a4 4 0 0 1 0 7.8M23 21v-2a4 4 0 0 0-3-3.9"/>',opd:'<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',ipd:'<path d="M2 4v16M2 8h18a2 2 0 0 1 2 2v10M2 17h20M6 8v9"/>',pharmacy:'<path d="M10.5 20.5a5 5 0 0 1-7-7l10-10a5 5 0 0 1 7 7z"/><path d="M8.5 8.5l7 7"/>',lab:'<path d="M9 3h6M10 3v6L4 20a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1L14 9V3M7 15h10"/>',billing:'<path d="M4 2v20l3-2 3 2 3-2 3 2 3-2 1 1V2zM8 7h8M8 11h8M8 15h5"/>',reports:'<path d="M3 3v18h18M7 15v3M12 10v8M17 6v12"/>',attendance:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',staff:'<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M6 16c.5-1.5 1.7-2 3-2s2.5.5 3 2M14 9h4M14 13h4"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M12 1v3M12 20v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M1 12h3M20 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'};
+const PAGES=[
+ {id:'dash',km:'ផ្ទាំងគ្រប់គ្រង',en:'Dashboard',roles:'*',g:'ការព្យាបាល'},
+ {id:'patients',km:'អ្នកជំងឺ · EMR',en:'Patients',roles:'doctor,nurse,cashier,lab,pharmacist',g:'ការព្យាបាល'},
+ {id:'opd',km:'ពិគ្រោះជំងឺក្រៅ',en:'OPD',roles:'doctor,nurse',g:'ការព្យាបាល'},
+ {id:'ipd',km:'សម្រាកព្យាបាល',en:'IPD · Wards',roles:'doctor,nurse',g:'ការព្យាបាល'},
+ {id:'pharmacy',km:'ឱសថស្ថាន',en:'Pharmacy',roles:'pharmacist,doctor',g:'សេវាគាំទ្រ'},
+ {id:'lab',km:'ពិសោធន៍ & រូបភាព',en:'Lab & Imaging',roles:'lab,doctor',g:'សេវាគាំទ្រ'},
+ {id:'billing',km:'វិក្កយបត្រ',en:'Billing',roles:'cashier',g:'សេវាគាំទ្រ'},
+ {id:'reports',km:'របាយការណ៍ HMIS',en:'Reports',roles:'doctor',g:'គ្រប់គ្រង'},
+ {id:'attendance',km:'វត្តមានបុគ្គលិក',en:'Attendance',roles:'*',g:'គ្រប់គ្រង'},
+ {id:'staff',km:'បុគ្គលិក',en:'Staff',roles:'',g:'គ្រប់គ្រង'},
+ {id:'settings',km:'ការកំណត់',en:'Settings',roles:'',g:'គ្រប់គ្រង'}];
+function canSee(id){if(!ME)return false;if(id==='chart')id='patients';const p=PAGES.find(x=>x.id===id);if(!p)return false;return ME.role==='admin'||p.roles==='*'||p.roles.split(',').includes(ME.role);}
+function badge(id){const d=today();if(id==='opd')return all('visits').filter(v=>v.date===d&&v.status!=='done').length;if(id==='lab')return all('labs').filter(l=>l.status!=='done').length;if(id==='pharmacy')return all('visits').filter(v=>v.status==='done'&&(v.rx||[]).length&&!v.dispensed).length;if(id==='billing')return all('invoices').filter(i=>!i.paid&&i.total>0).length;return 0;}
+function buildNav(){let g='';$('#nav').innerHTML=PAGES.filter(p=>canSee(p.id)).map(p=>{const b=badge(p.id);const h=(p.g!==g?`<div class="g">${g=p.g}</div>`:'')+`<a data-p="${p.id}" onclick="go('${p.id}')"><svg viewBox="0 0 24 24">${IC[p.id]}</svg><span>${p.km}<small>${p.en}</small></span>${b?`<i class="bd">${b}</i>`:''}</a>`;return h;}).join('');
+ $('#user').innerHTML=`<div class="av">${esc((ME.name||'?')[0])}</div><div class="nm"><b>${esc(ME.name)}</b><small>${ROLES[ME.role]||''}</small></div>`;$('#sbHosp').textContent=S().hospKm||'';}
+function go(p,arg){if(!canSee(p))p='dash';curPage=p;curArg=arg??null;document.body.classList.remove('nav');render();$('#view').scrollTop=0;}
+function render(){if(!ME)return;const p=PAGES.find(x=>x.id===curPage)||{km:'កំណត់ត្រាវេជ្ជសាស្ត្រ',en:'Electronic Medical Record'};
+ $('#ttl').innerHTML=`${p.km}<small>${p.en}</small>`;buildNav();
+ document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.p===(curPage==='chart'?'patients':curPage)));
+ try{$('#view').innerHTML=VIEWS[curPage](curArg);}catch(e){console.error(e);$('#view').innerHTML=`<div class="alert bad">កំហុស៖ ${esc(e.message)}</div>`;}updSync();}
+
+/* ================= DASHBOARD ================= */
+function stat(l,v,s,c,on){return `<div class="st" style="--c:${c}" onclick="${on||''}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${s||''}</div></div>`;}
+function bars(data){const mx=Math.max(1,...data.map(d=>d[1]));const W=440,H=150,bw=W/data.length;return `<svg viewBox="0 0 ${W} ${H+30}" style="width:100%;height:auto">${data.map((d,i)=>{const h=d[1]/mx*(H-20);return `<rect x="${i*bw+bw*.2}" y="${H-h}" width="${bw*.6}" height="${h}" rx="5" fill="url(#gb)"/><text x="${i*bw+bw/2}" y="${H-h-6}" fill="#e4f5f9" font-size="12" text-anchor="middle" font-family="JetBrains Mono">${d[1]}</text><text x="${i*bw+bw/2}" y="${H+18}" fill="#8fb3c3" font-size="11" text-anchor="middle" font-family="JetBrains Mono">${d[2]}</text>`;}).join('')}<defs><linearGradient id="gb" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22d3e6"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs></svg>`;}
+function vDash(){const d=today(),vs=all('visits').filter(v=>v.date===d),occ=bedOcc(),beds=allBeds(),sm=stockMap();
+ const low=all('drugs').filter(x=>(sm[x.id]||0)<=(+x.min||0));const st=all('staff').filter(s=>s.active!==false);const att=all('attendance').filter(a=>a.date===d&&(a.status==='present'||a.status==='late'));
+ const my=all('attendance').find(a=>a.staffId===ME.id&&a.date===d);const unpaid=all('invoices').filter(i=>!i.paid&&i.total>0);
+ const rev=all('invoices').filter(i=>i.paid&&i.paidAt&&ymd(new Date(i.paidAt))===d).reduce((s,i)=>s+(+i.due||0),0);
+ const days=[];for(let i=6;i>=0;i--){const x=new Date();x.setDate(x.getDate()-i);const k=ymd(x);days.push([k,all('visits').filter(v=>v.date===k).length,pad(x.getDate())+'/'+pad(x.getMonth()+1)]);}
+ const myTxt=!my?chip('មិនទាន់ចុះវត្តមាន','bad'):my.status==='leave'?chip('ច្បាប់','sea'):chip(`ចូល ${my.in}${my.out?' · ចេញ '+my.out:''}`,my.status==='late'?'wa':'ok');
+ const occN=Object.keys(occ).length;const q=vs.filter(v=>v.status!=='done').sort((a,b)=>a.createdAt-b.createdAt);
+ return `<div class="hero"><div><div class="sub">${khDate(new Date())}</div><h2>សួស្តី, ${esc(ME.name)} 👋</h2><div style="margin-top:6px">វត្តមានខ្ញុំថ្ងៃនេះ៖ ${myTxt}</div></div><div class="sp"></div><button class="btn pri" onclick="punch(ME)">🕘 ${!my||!my.in?'ចុះវត្តមានចូល':!my.out?'ចុះវត្តមានចេញ':'វត្តមានរួចរាល់'}</button></div>
+ <div class="stats">
+ ${stat('OPD ថ្ងៃនេះ',vs.length,`រង់ចាំ ${q.length} · រួច ${vs.length-q.length}`,'#22d3e6',"go('opd')")}
+ ${stat('អ្នកជំងឺសម្រាកពេទ្យ',occN,`គ្រែ ${occN}/${beds.length} · ${beds.length?Math.round(occN/beds.length*100):0}%`,'#f4cf86',"go('ipd')")}
+ ${stat('តេស្តរង់ចាំលទ្ធផល',all('labs').filter(l=>l.status!=='done').length,'Lab & Imaging','#a78bfa',"go('lab')")}
+ ${stat('វិក្កយបត្រមិនទាន់បង់',unpaid.length,`ចំណូលថ្ងៃនេះ ${money(rev)}`,'#ff8a7a',"go('billing')")}
+ ${stat('ថ្នាំជិតអស់ស្តុក',low.length,'ទាបជាងកម្រិតអប្បបរមា','#fbbf24',"PH_TAB='stock';go('pharmacy')")}
+ ${stat('បុគ្គលិកមកធ្វើការ',`${att.length}/${st.length}`,`យឺត ${att.filter(a=>a.status==='late').length}`,'#34d399',"go('attendance')")}
+ </div>
+ <div class="grid2"><div class="card"><h4>📈 ចំនួនអ្នកជំងឺ OPD ៧ ថ្ងៃចុងក្រោយ</h4>${bars(days)}</div>
+ <div class="card"><h4>⏳ ជួររង់ចាំ OPD<span class="sp"></span><button class="btn sm" onclick="go('opd')">មើលទាំងអស់</button></h4>${q.length?`<div class="tw"><table class="t"><tbody>${q.slice(0,7).map((v,i)=>{const p=get('patients',v.patientId);return `<tr><td class="mono">${i+1}</td><td><b>${esc(p?p.name:'')}</b><div class="sub">${sexAge(p)}</div></td><td>${chip(VST[v.status][0],VST[v.status][1])}</td><td class="mono sub">${v.time}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="empty">គ្មានអ្នករង់ចាំ</div>'}</div></div>
+ <div class="grid2"><div class="card"><h4>🛏️ ការប្រើប្រាស់គ្រែតាមផ្នែក</h4>${(S().wards||[]).map(w=>{const n=+w.beds||0;const o=Object.values(occ).filter(a=>a.ward===w.code).length;return `<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${esc(w.name)}</span><span class="mono">${o}/${n}</span></div><div class="prog"><i style="width:${n?o/n*100:0}%"></i></div></div>`;}).join('')||'<div class="empty">មិនទាន់កំណត់ផ្នែក</div>'}</div>
+ <div class="card"><h4>💊 ថ្នាំត្រូវបញ្ជាទិញបន្ថែម</h4>${low.length?`<div class="tw"><table class="t"><tbody>${low.slice(0,8).map(x=>`<tr><td>${esc(x.name)}</td><td class="r mono" style="color:var(--bad)">${sm[x.id]||0}</td><td class="r sub">អប្ប. ${x.min}</td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">ស្តុកគ្រប់គ្រាន់ ✓</div>'}</div></div>`;}
+
+/* ================= PATIENTS / EMR ================= */
+let PICK_CB=null,CHART_TAB='tl';
+function pFilter(q){q=(q||'').trim().toLowerCase();let ps=all('patients');if(q)ps=ps.filter(p=>[p.name,p.nameEn,p.mrn,p.phone,p.hef,p.nssf].some(x=>String(x||'').toLowerCase().includes(q)));return ps.sort((a,b)=>b.updatedAt-a.updatedAt);}
+function vPatients(){return `<div class="bar"><div class="srch"><input id="pq" placeholder="🔎 ស្វែងរក ឈ្មោះ / HN / ទូរស័ព្ទ / HEF..." oninput="$('#plist').innerHTML=pRows(this.value)"></div><button class="btn pri" onclick="patientForm()">＋ ចុះឈ្មោះអ្នកជំងឺថ្មី</button></div>
+ <div class="card p0"><div class="tw"><table class="t"><thead><tr><th>HN</th><th>ឈ្មោះ</th><th>ភេទ/អាយុ</th><th>ទូរស័ព្ទ</th><th>អាសយដ្ឋាន</th><th>សិទ្ធិ</th><th></th></tr></thead><tbody id="plist">${pRows('')}</tbody></table></div></div><div class="sub">សរុប ${all('patients').length} នាក់</div>`;}
+function pRows(q){const ps=pFilter(q);if(!ps.length)return `<tr><td colspan="7" class="empty">មិនមានទិន្នន័យ</td></tr>`;
+ return ps.slice(0,200).map(p=>`<tr class="click" onclick="go('chart','${p.id}')"><td class="mono">${esc(p.mrn)}</td><td><b>${esc(p.name)}</b><div class="sub">${esc(p.nameEn||'')}</div></td><td>${sexAge(p)}</td><td class="mono">${esc(p.phone||'')}</td><td>${esc(p.addr||'')}</td><td>${covChips(p)}</td><td class="r">${canSee('opd')?`<button class="btn sm" onclick="event.stopPropagation();newVisit('${p.id}')">＋ OPD</button>`:''}</td></tr>`).join('');}
+function patientForm(id,cb){const p=id?get('patients',id):{};const age=p.dob?Math.floor(ageOf(p)):'';
+ openModal(id?'កែប្រែព័ត៌មានអ្នកជំងឺ':'ចុះឈ្មោះអ្នកជំងឺថ្មី',`<div class="fg">
+ ${fld('ឈ្មោះ (ខ្មែរ) *',inp('p_name',p.name),'w2')}${fld('ឈ្មោះ (ឡាតាំង)',inp('p_en',p.nameEn))}
+ ${fld('ភេទ *',sel('p_sex',[['','—'],['M','ប្រុស'],['F','ស្រី']],p.sex))}
+ ${fld('ថ្ងៃខែឆ្នាំកំណើត',inp('p_dob',p.dobEst?'':p.dob,'type="date" class="mono"'))}
+ ${fld('ឬ អាយុ (ឆ្នាំ)',inp('p_age',p.dobEst?age:'','type="number" min="0" step="0.1" class="mono" oninput="this.closest(\'.fg\').querySelector(\'#p_dob\').value=\'\'"'))}
+ ${fld('ទូរស័ព្ទ',inp('p_phone',p.phone,'class="mono" inputmode="tel"'))}${fld('មុខរបរ',inp('p_occ',p.occ))}
+ ${fld('អាសយដ្ឋាន (ភូមិ/ឃុំ/ស្រុក/ខេត្ត)',inp('p_addr',p.addr),'wf')}
+ ${fld('លេខប័ណ្ណ HEF / IDPoor',inp('p_hef',p.hef,'class="mono"'))}${fld('លេខ NSSF',inp('p_nssf',p.nssf,'class="mono"'))}
+ ${fld('ក្រុមឈាម',sel('p_blood',['','A+','A-','B+','B-','AB+','AB-','O+','O-'].map(x=>[x,x||'—']),p.blood))}
+ ${fld('អ្នកទំនាក់ទំនងពេលអាសន្ន',inp('p_emer',p.emer))}
+ ${fld('⚠️ អាឡែកហ្ស៊ី (Allergies)',inp('p_all',p.allergies,'placeholder="ឧ. Penicillin, Sulfa"'),'w2')}
+ ${fld('ជំងឺរ៉ាំរ៉ៃ (Chronic)',inp('p_chr',p.chronic,'placeholder="ឧ. HTN, DM"'),'w2')}
+ ${fld('កំណត់សម្គាល់',ta('p_note',p.note),'wf')}</div>`,SAVE_FOOT('p_save'),'lg');
+ mq('#p_save').onclick=()=>savePatient(id,cb);setTimeout(()=>{const e=mq('#p_name');e&&e.focus();},60);}
+async function savePatient(id,cb){const o=id?get('patients',id):{};const name=mv('#p_name'),sex=mv('#p_sex'),age=mv('#p_age');let dob=mv('#p_dob');
+ if(!name||!sex){toast('សូមបំពេញឈ្មោះ និងភេទ','bad');return;}
+ let est=false;if(!dob&&age!==''){dob=ymd(new Date(Date.now()-(+age)*365.25*864e5));est=true;}
+ if(!dob){toast('សូមបញ្ចូលថ្ងៃខែឆ្នាំកំណើត ឬអាយុ','bad');return;}
+ const phone=mv('#p_phone');
+ if(!id){const dup=all('patients').find(x=>x.name===name&&x.sex===sex&&(!phone||x.phone===phone));if(dup&&!await ask(`មានអ្នកជំងឺឈ្មោះ <b>${esc(name)}</b> (${esc(dup.mrn)}) រួចហើយ។<br>តើចង់ចុះឈ្មោះថ្មីដែរឬទេ?`,'ចុះថ្មី'))return;o.mrn=nextMRN();}
+ Object.assign(o,{name,nameEn:mv('#p_en'),sex,dob,dobEst:est,phone,occ:mv('#p_occ'),addr:mv('#p_addr'),hef:mv('#p_hef'),nssf:mv('#p_nssf'),blood:mv('#p_blood'),emer:mv('#p_emer'),allergies:mv('#p_all'),chronic:mv('#p_chr'),note:mv('#p_note')});
+ put('patients',o);closeModal();toast('បានរក្សាទុក '+o.mrn,'ok');if(cb)cb(o);else render();}
+function pickPatient(cb){PICK_CB=cb;openModal('ជ្រើសរើសអ្នកជំងឺ',`<div class="srch"><input id="pk_q" placeholder="🔎 ស្វែងរក ឈ្មោះ / HN / ទូរស័ព្ទ..." oninput="pkList()"></div><div id="pk_l" class="plist"></div>`,`<button class="btn ghost" onclick="closeModal()">បោះបង់</button><button class="btn pri" onclick="closeModal();patientForm(null,PICK_CB)">＋ ចុះឈ្មោះអ្នកជំងឺថ្មី</button>`);pkList();setTimeout(()=>{const e=mq('#pk_q');e&&e.focus();},60);}
+function pkList(){const ps=pFilter(mv('#pk_q'));mq('#pk_l').innerHTML=ps.slice(0,40).map(p=>`<div class="pi" onclick="pkPick('${p.id}')"><b>${esc(p.name)}</b> <span class="mono sub">${esc(p.mrn)}</span> ${covChips(p)}<div class="sub">${sexAge(p)} · ${esc(p.phone||'')} · ${esc(p.addr||'')}</div></div>`).join('')||'<div class="empty">រកមិនឃើញ — ចុះឈ្មោះថ្មី</div>';}
+function pkPick(id){closeModal();PICK_CB&&PICK_CB(get('patients',id));}
+function spark(vals,color){vals=vals.filter(v=>!isNaN(v));if(vals.length<2)return '<span class="sub">ទិន្នន័យមិនគ្រប់</span>';const mn=Math.min(...vals),mx=Math.max(...vals),W=260,H=60;const pts=vals.map((v,i)=>`${i/(vals.length-1)*W},${H-6-(mx===mn?.5:(v-mn)/(mx-mn))*(H-12)}`).join(' ');return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:300px;height:60px"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round"/></svg><div class="sub mono">min ${mn} · max ${mx} · ចុងក្រោយ ${vals[vals.length-1]}</div>`;}
+function vChart(pid){const p=get('patients',pid);if(!p)return '<div class="empty">រកមិនឃើញអ្នកជំងឺ</div>';
+ const vs=all('visits').filter(v=>v.patientId===pid).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
+ const ads=all('admissions').filter(a=>a.patientId===pid).sort((a,b)=>b.admitAt-a.admitAt);
+ const labs=all('labs').filter(l=>l.patientId===pid).sort((a,b)=>b.orderedAt-a.orderedAt);
+ const invs=all('invoices').filter(i=>i.patientId===pid).sort((a,b)=>b.createdAt-a.createdAt);
+ const cur=ads.find(a=>a.status==='admitted');const T=CHART_TAB;
+ let body='';
+ if(T==='tl'){const ev=[...vs.map(v=>({t:new Date(v.date+'T'+(v.time||'00:00')).getTime(),h:`<div class="tl"><div class="tl-d mono">${fmtD(v.date)}<br>${v.time||''}</div><div class="tl-c" onclick="viewVisit('${v.id}')"><div>${chip('OPD','ac')} ${chip(VST[v.status][0],VST[v.status][1])} ${v.newCase?chip('ករណីថ្មី'):''} ${dxTxt(v.dx)}</div><div class="sub" style="margin-top:4px">${esc(v.cc||'')}${v.doctorId?' · វេជ្ជ. '+esc(staffName(v.doctorId)):''}</div><div class="sub mono">${vitTxt(v.vitals)}</div></div></div>`})),
+  ...ads.map(a=>({t:a.admitAt,h:`<div class="tl"><div class="tl-d mono">${fmtDT(a.admitAt).replace(' ','<br>')}</div><div class="tl-c ipd" onclick="admChart('${a.id}')"><div>${chip('IPD','sand')} ${a.status==='admitted'?chip('កំពុងសម្រាក','wa'):chip(OUTC[a.outcome]||'ចេញ','ok')} គ្រែ <b class="mono">${a.bedId}</b> · ${losDays(a)} ថ្ងៃ</div><div class="sub" style="margin-top:4px">${esc(a.finalDx||a.dx||'')}</div></div></div>`}))].sort((a,b)=>b.t-a.t);
+  body=ev.map(e=>e.h).join('')||'<div class="empty">មិនទាន់មានប្រវត្តិព្យាបាល</div>';}
+ if(T==='vit'){const rows=[...vs.filter(v=>v.vitals).map(v=>({t:new Date(v.date+'T'+(v.time||'00:00')).getTime(),s:'OPD',v:v.vitals})),...ads.flatMap(a=>(a.notes||[]).filter(n=>n.vitals).map(n=>({t:n.at,s:'IPD',v:n.vitals})))].sort((a,b)=>b.t-a.t);
+  const sys=rows.slice().reverse().map(r=>parseFloat(String(r.v.bp||'').split('/')[0])),wt=rows.slice().reverse().map(r=>parseFloat(r.v.wt));
+  body=`<div class="grid2" style="margin-bottom:14px"><div class="sec" style="margin:0"><h5>សម្ពាធឈាម Systolic</h5>${spark(sys,'#ff8a7a')}</div><div class="sec" style="margin:0"><h5>ទម្ងន់ (kg)</h5>${spark(wt,'#22d3e6')}</div></div><div class="tw"><table class="t"><thead><tr><th>កាលបរិច្ឆេទ</th><th></th><th>BP</th><th>P</th><th>T°</th><th>RR</th><th>SpO₂</th><th>Wt</th><th>Ht</th><th>BMI</th></tr></thead><tbody>${rows.map(r=>{const v=r.v,bmi=v.wt&&v.ht?(v.wt/Math.pow(v.ht/100,2)).toFixed(1):'';return `<tr><td class="mono">${fmtDT(r.t)}</td><td>${chip(r.s,r.s==='OPD'?'ac':'sand')}</td><td class="mono">${esc(v.bp||'')}</td><td class="mono">${esc(v.pulse||'')}</td><td class="mono">${esc(v.temp||'')}</td><td class="mono">${esc(v.rr||'')}</td><td class="mono">${esc(v.spo2||'')}</td><td class="mono">${esc(v.wt||'')}</td><td class="mono">${esc(v.ht||'')}</td><td class="mono">${bmi}</td></tr>`;}).join('')||'<tr><td colspan="10" class="empty">គ្មានទិន្នន័យ</td></tr>'}</tbody></table></div>`;}
+ if(T==='med'){const rows=[...vs.flatMap(v=>(v.rx||[]).map(r=>({d:v.date,s:'OPD',n:r.name,h:rxHow(r)+` · ${r.days} ថ្ងៃ`,q:r.qty+' '+(r.unit||''),ok:v.dispensed}))),...all('stockMoves').filter(m=>m.patientId===pid&&m.admissionId).map(m=>{const d=get('drugs',m.drugId)||{};return {d:m.date,s:'IPD',n:d.name||'',h:esc(m.note||''),q:(-m.qty)+' '+(d.unit||''),ok:true};})].sort((a,b)=>b.d.localeCompare(a.d));
+  body=`<div class="tw"><table class="t"><thead><tr><th>ថ្ងៃ</th><th></th><th>ថ្នាំ</th><th>របៀបប្រើ</th><th class="r">ចំនួន</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td class="mono">${fmtD(r.d)}</td><td>${chip(r.s,r.s==='OPD'?'ac':'sand')}</td><td><b>${esc(r.n)}</b></td><td class="sub">${r.h}</td><td class="r mono">${esc(r.q)}</td><td>${r.ok?chip('បានចេញ','ok'):chip('រង់ចាំ','wa')}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">គ្មានទិន្នន័យ</td></tr>'}</tbody></table></div>`;}
+ if(T==='lab')body=labTable(labs,true);
+ if(T==='bill')body=`<div class="tw"><table class="t"><thead><tr><th>#</th><th>ថ្ងៃ</th><th>ប្រភព</th><th class="r">សរុប</th><th>ប្រភេទ</th><th></th></tr></thead><tbody>${invs.map(i=>`<tr class="click" onclick="invoiceView('${i.id}')"><td class="mono">${invNo(i)}</td><td class="mono">${fmtD(i.date)}</td><td>${esc(i.label||'')}</td><td class="r mono">${money(i.total)}</td><td>${esc(PAY[i.payType]||'')}</td><td>${i.paid?chip('បានបង់','ok'):chip('មិនទាន់បង់','bad')}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">គ្មានវិក្កយបត្រ</td></tr>'}</tbody></table></div>`;
+ const tabs=[['tl','🕑 ប្រវត្តិព្យាបាល'],['vit','❤️ សញ្ញាជីវិត'],['med','💊 ថ្នាំ'],['lab','🧪 ពិសោធន៍'],['bill','🧾 វិក្កយបត្រ']];
+ return `<div class="bar"><button class="btn ghost sm" onclick="go('patients')">← ត្រឡប់</button><span class="sp"></span>
+ ${canSee('opd')?`<button class="btn pri sm" onclick="newVisit('${pid}')">＋ ពិគ្រោះ OPD</button>`:''}
+ ${canSee('ipd')?(cur?`<button class="btn sm wa" onclick="admChart('${cur.id}')">🛏️ គ្រែ ${cur.bedId}</button>`:`<button class="btn sm" onclick="admitForm('${pid}')">🛏️ ចូលសម្រាកពេទ្យ</button>`):''}
+ ${canSee('lab')||canSee('opd')?`<button class="btn sm" onclick="labOrderForm('${pid}')">🧪 បញ្ជាតេស្ត</button>`:''}
+ <button class="btn sm" onclick="patientForm('${pid}')">✏️ កែប្រែ</button><button class="btn sm" onclick="printSummary('${pid}')">🖨️ សង្ខេប</button></div>
+ <div class="card">${ptStrip(p,cur?chip('កំពុងសម្រាកពេទ្យ · '+cur.bedId,'wa'):'')}
+ <div class="fg" style="margin-top:12px;font-size:13px"><div><span class="sub">អាសយដ្ឋាន</span><br>${esc(p.addr||'—')}</div><div><span class="sub">មុខរបរ</span><br>${esc(p.occ||'—')}</div><div><span class="sub">HEF / NSSF</span><br><span class="mono">${esc(p.hef||'—')} / ${esc(p.nssf||'—')}</span></div><div><span class="sub">ទំនាក់ទំនងអាសន្ន</span><br>${esc(p.emer||'—')}</div><div><span class="sub">ចុះឈ្មោះ</span><br><span class="mono">${fmtD(ymd(new Date(p.createdAt||Date.now())))}</span></div><div><span class="sub">ចំនួនមកពិនិត្យ</span><br><span class="mono">OPD ${vs.length} · IPD ${ads.length}</span></div></div>${p.note?`<div class="note">${esc(p.note)}</div>`:''}</div>
+ <div class="card"><div class="tabs">${tabs.map(t=>`<button class="${T===t[0]?'on':''}" onclick="CHART_TAB='${t[0]}';render()">${t[1]}</button>`).join('')}</div>${body}</div>`;}
+function printSummary(pid){const p=get('patients',pid);const vs=all('visits').filter(v=>v.patientId===pid&&v.status==='done').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,15);const ads=all('admissions').filter(a=>a.patientId===pid).sort((a,b)=>b.admitAt-a.admitAt);const labs=all('labs').filter(l=>l.patientId===pid&&l.status==='done').sort((a,b)=>b.resultAt-a.resultAt).slice(0,15);
+ printHTML(phead('សង្ខេបកំណត់ត្រាវេជ្ជសាស្ត្រ · MEDICAL RECORD SUMMARY')+ptBlock(p)+(p.chronic?`<p>ជំងឺរ៉ាំរ៉ៃ៖ <b>${esc(p.chronic)}</b></p>`:'')+
+ `<div class="sec"><h3>ពិគ្រោះជំងឺក្រៅ (OPD)</h3><table><tr><th>ថ្ងៃ</th><th>ការត្អូញត្អែរ</th><th>រោគវិនិច្ឆ័យ</th><th>ថ្នាំ</th></tr>${vs.map(v=>`<tr><td>${fmtD(v.date)}</td><td>${esc(v.cc||'')}</td><td>${esc(dxPlain(v.dx))}</td><td>${(v.rx||[]).map(r=>esc(r.name)+' ×'+r.qty).join(', ')}</td></tr>`).join('')||'<tr><td colspan="4">—</td></tr>'}</table></div>`+
+ `<div class="sec"><h3>សម្រាកព្យាបាល (IPD)</h3><table><tr><th>ចូល</th><th>ចេញ</th><th>ផ្នែក/គ្រែ</th><th>រោគវិនិច្ឆ័យ</th><th>លទ្ធផល</th></tr>${ads.map(a=>`<tr><td>${fmtDT(a.admitAt)}</td><td>${a.dischargeAt?fmtDT(a.dischargeAt):'—'}</td><td>${a.bedId}</td><td>${esc(a.finalDx||a.dx||'')}</td><td>${OUTC[a.outcome]||'កំពុងសម្រាក'}</td></tr>`).join('')||'<tr><td colspan="5">—</td></tr>'}</table></div>`+
+ `<div class="sec"><h3>លទ្ធផលពិសោធន៍</h3><table><tr><th>ថ្ងៃ</th><th>តេស្ត</th><th>លទ្ធផល</th></tr>${labs.map(l=>`<tr><td>${fmtD(l.date)}</td><td>${esc(l.name)}</td><td>${esc(l.result||'')} ${esc(l.unit||'')}${l.abn?' (មិនប្រក្រតី)':''}</td></tr>`).join('')||'<tr><td colspan="3">—</td></tr>'}</table></div>`+sig('វេជ្ជបណ្ឌិត',ME.name));}
+
+/* ================= OPD ================= */
+let OPD_DATE=null,CUR_DX=[];
+function vOPD(){const d=OPD_DATE||today();const vs=all('visits').filter(v=>v.date===d).sort((a,b)=>a.createdAt-b.createdAt);const c=k=>vs.filter(v=>v.status===k).length;
+ return `<div class="bar"><input type="date" class="mono" value="${d}" onchange="OPD_DATE=this.value;render()"><button class="btn sm ghost" onclick="OPD_DATE=null;render()">ថ្ងៃនេះ</button>${chip('រង់ចាំ '+c('waiting'),'wa')}${chip('វាស់រួច '+c('triage'),'sea')}${chip('រួចរាល់ '+c('done'),'ok')}<span class="sp"></span><button class="btn pri" onclick="newVisit()">＋ បញ្ចូលអ្នកជំងឺក្នុងជួរ</button></div>
+ <div class="card p0"><div class="tw"><table class="t"><thead><tr><th>#</th><th>ម៉ោង</th><th>អ្នកជំងឺ</th><th>ស្ថានភាព</th><th>សញ្ញាជីវិត</th><th>រោគវិនិច្ឆ័យ</th><th class="r">សកម្មភាព</th></tr></thead><tbody>
+ ${vs.map((v,i)=>{const p=get('patients',v.patientId)||{};return `<tr><td class="mono">${i+1}</td><td class="mono">${v.time||''}</td><td><a style="cursor:pointer" onclick="go('chart','${v.patientId}')"><b>${esc(p.name)}</b></a> <span class="mono sub">${esc(p.mrn||'')}</span><div class="sub">${sexAge(p,v.date)} ${v.newCase?'· ករណីថ្មី':'· ករណីចាស់'} ${covChips(p)}</div></td><td>${chip(VST[v.status][0],VST[v.status][1])}${v.dispensed?' '+chip('ចេញថ្នាំរួច','ok'):''}</td><td class="sub mono" style="max-width:200px">${vitTxt(v.vitals)}</td><td style="max-width:240px">${dxTxt(v.dx)}</td>
+ <td class="r" style="white-space:nowrap">${v.status==='waiting'?`<button class="btn sm" onclick="triage('${v.id}')">❤️ វាស់សញ្ញាជីវិត</button> `:''}${v.status!=='done'?`<button class="btn sm pri" onclick="consult('${v.id}')">🩺 ពិនិត្យ</button>`:`<button class="btn sm" onclick="viewVisit('${v.id}')">មើល</button> <button class="btn sm" onclick="consult('${v.id}')">✏️</button> ${(v.rx||[]).length?`<button class="btn sm" onclick="printRx('${v.id}')">🖨️</button>`:''}`} ${!v.dispensed?`<button class="ib" title="លុប" onclick="delVisit('${v.id}')">🗑</button>`:''}</td></tr>`;}).join('')||'<tr><td colspan="7" class="empty">គ្មានអ្នកជំងឺក្នុងជួរ</td></tr>'}
+ </tbody></table></div></div>`;}
+function newVisit(pid){if(!pid){pickPatient(p=>newVisit(p.id));return;}const p=get('patients',pid);const d=today();
+ const ex=all('visits').find(v=>v.patientId===pid&&v.date===d&&v.status!=='done');if(ex){toast('អ្នកជំងឺនេះកំពុងនៅក្នុងជួររួចហើយ','wa');OPD_DATE=null;go('opd');return;}
+ const recent=all('visits').some(v=>v.patientId===pid&&(Date.now()-new Date(v.date).getTime())<30*864e5);
+ put('visits',{patientId:pid,date:d,time:nowHM(),status:'waiting',newCase:!recent,payType:p.hef?'hef':p.nssf?'nssf':'cash',rx:[],dx:[]});toast('បានបញ្ចូលក្នុងជួរ OPD · '+p.name,'ok');OPD_DATE=null;go('opd');}
+async function delVisit(id){const v=get('visits',id);if(!v)return;const inv=get('invoices','inv_'+id);if(inv&&inv.paid){toast('វិក្កយបត្របានបង់រួច មិនអាចលុបបាន','bad');return;}
+ if(!await ask('លុបការមកពិនិត្យនេះចេញពីជួរ?','លុប',1))return;del('visits',id);if(inv)del('invoices',inv.id);all('labs').filter(l=>l.visitId===id&&l.status!=='done').forEach(l=>del('labs',l.id));render();}
+function vitalsForm(v){v=v||{};const f=(k,l,ph)=>fld(l,`<input id="v_${k}" class="mono" value="${esc(v[k]||'')}" placeholder="${ph}" ${k==='bp'?'':'inputmode="decimal"'}>`);return `<div class="fg" style="grid-template-columns:repeat(auto-fill,minmax(105px,1fr))">${f('bp','BP (mmHg)','120/80')}${f('pulse','Pulse (/min)','80')}${f('temp','Temp (°C)','37')}${f('rr','RR (/min)','18')}${f('spo2','SpO₂ (%)','98')}${f('wt','ទម្ងន់ (kg)','')}${f('ht','កម្ពស់ (cm)','')}</div>`;}
+function readVitals(){const o={};['bp','pulse','temp','rr','spo2','wt','ht'].forEach(k=>{const x=mv('#v_'+k);if(x)o[k]=k==='bp'?x:(+x||x);});return o;}
+function triage(id){const v=get('visits',id),p=get('patients',v.patientId);openModal('វាស់សញ្ញាជីវិត · Triage',ptStrip(p)+`<div class="sec"><h5>❤️ សញ្ញាជីវិត</h5>${vitalsForm(v.vitals)}</div>${fld('ការត្អូញត្អែរចម្បង (Chief complaint)',ta('t_cc',v.cc))}`,SAVE_FOOT('t_save'),'lg');
+ mq('#t_save').onclick=()=>{v.vitals=readVitals();v.cc=mv('#t_cc');v.triageBy=ME.id;if(v.status==='waiting')v.status='triage';put('visits',v);closeModal();toast('បានរក្សាទុកសញ្ញាជីវិត','ok');render();};}
+function renderDx(){const e=mq('#dxList');if(e)e.innerHTML=CUR_DX.map((d,i)=>`<span class="chip ac">${d.code?`<b class="mono">${esc(d.code)}</b> `:''}${esc(d.name)}<button onclick="CUR_DX.splice(${i},1);renderDx()">✕</button></span>`).join('')||'<span class="sub">មិនទាន់មានរោគវិនិច្ឆ័យ</span>';}
+function addDx(){const e=mq('#dxIn');const val=(e.value||'').trim();if(!val)return;const m=/^([A-Z]\d{2}(?:\.\d{1,2})?)\b\s*[-–·:]?\s*(.*)$/i.exec(val);let d;
+ if(m){const code=m[1].toUpperCase();const k=ICD.find(x=>x[0]===code);d={code,name:m[2]||(k?k[1]:'')};}else{const k=ICD.find(x=>x[1].toLowerCase().includes(val.toLowerCase()));d=k?{code:k[0],name:k[1]}:{code:'',name:val};}
+ if(!CUR_DX.some(x=>x.code&&x.code===d.code))CUR_DX.push(d);e.value='';renderDx();}
+function rxRow(r){r=r||{};const sm=stockMap();return `<tr><td style="min-width:200px"><select class="rx-d" onchange="rxCalc(this)"><option value="">— ជ្រើសរើសថ្នាំ —</option>${all('drugs').sort((a,b)=>a.name.localeCompare(b.name)).map(d=>`<option value="${d.id}" ${d.id===r.drugId?'selected':''}>${esc(d.name)} (${sm[d.id]||0})</option>`).join('')}</select></td>
+ <td><input class="rx-dose mono" type="number" step="0.5" min="0" style="width:64px" value="${r.dose??1}" oninput="rxCalc(this)"></td>
+ <td><select class="rx-f" onchange="rxCalc(this)">${FREQ.map(f=>`<option value="${f[0]}" ${f[0]===(r.freq||'3')?'selected':''}>${f[1]}</option>`).join('')}</select></td>
+ <td><input class="rx-days mono" type="number" min="0" style="width:60px" value="${r.days??3}" oninput="rxCalc(this)"></td>
+ <td><input class="rx-q mono" type="number" min="0" style="width:70px" value="${r.qty??''}"></td>
+ <td><input class="rx-n" value="${esc(r.note||'')}" placeholder="ក្រោយបាយ..."></td><td><button class="ib" onclick="this.closest('tr').remove()">✕</button></td></tr>`;}
+function rxCalc(el){const tr=el.closest('tr');const dose=+tr.querySelector('.rx-dose').value||0;const f=FREQ.find(x=>x[0]===tr.querySelector('.rx-f').value);const days=+tr.querySelector('.rx-days').value||0;tr.querySelector('.rx-q').value=Math.ceil(dose*(f?f[2]:1)*days)||'';}
+function readRx(){return [...topM().querySelectorAll('#rxT tbody tr')].map(tr=>{const id=tr.querySelector('.rx-d').value;const d=get('drugs',id);return {drugId:id,name:d?d.name:'',unit:d?d.unit:'',dose:+tr.querySelector('.rx-dose').value||0,freq:tr.querySelector('.rx-f').value,days:+tr.querySelector('.rx-days').value||0,qty:+tr.querySelector('.rx-q').value||0,note:tr.querySelector('.rx-n').value.trim()};}).filter(r=>r.drugId);}
+function consult(id){const v=get('visits',id),p=get('patients',v.patientId);CUR_DX=(v.dx||[]).slice();const ordered=all('labs').filter(l=>l.visitId===id);
+ const rx=v.dispensed?`<div class="alert wa">ថ្នាំត្រូវបានចេញរួចហើយ — មិនអាចកែវេជ្ជបញ្ជាបាន</div><div class="tw"><table class="t"><tbody>${(v.rx||[]).map(r=>`<tr><td><b>${esc(r.name)}</b></td><td class="sub">${rxHow(r)} · ${r.days} ថ្ងៃ</td><td class="r mono">${r.qty}</td></tr>`).join('')}</tbody></table></div>`
+  :`<div class="tw"><table class="t" id="rxT"><thead><tr><th>ថ្នាំ (ស្តុក)</th><th>ម្តង</th><th>ដង/ថ្ងៃ</th><th>ថ្ងៃ</th><th>ចំនួន</th><th>ចំណាំ</th><th></th></tr></thead><tbody>${(v.rx||[]).map(rxRow).join('')}</tbody></table></div><button class="btn sm" style="margin-top:8px" onclick="mq('#rxT tbody').insertAdjacentHTML('beforeend',rxRow());const t=mq('#rxT tbody tr:last-child .rx-d');rxCalc(t);t.focus()">＋ បន្ថែមថ្នាំ</button>`;
+ openModal(`ពិនិត្យព្យាបាល · EMR — ${fmtD(v.date)}`,ptStrip(p,chip(v.newCase?'ករណីថ្មី':'ករណីចាស់'))+
+ `<div class="sec"><h5>❤️ សញ្ញាជីវិត Vital signs</h5>${vitalsForm(v.vitals)}</div>
+ <div class="sec"><h5>📝 ប្រវត្តិ និងការពិនិត្យ</h5><div class="fg" style="grid-template-columns:1fr 1fr">${fld('ការត្អូញត្អែរចម្បង (Chief complaint)',ta('c_cc',v.cc))}${fld('ប្រវត្តិជំងឺបច្ចុប្បន្ន (HPI)',ta('c_hpi',v.hpi))}${fld('ការពិនិត្យរាងកាយ (Physical exam)',ta('c_pe',v.pe))}${fld('ប្រវត្តិពីមុន / គ្រួសារ (PMH/FH)',ta('c_pmh',v.pmh))}</div></div>
+ <div class="sec"><h5>🩺 រោគវិនិច្ឆ័យ ICD-10</h5><div style="display:flex;gap:8px"><input id="dxIn" list="icdl" class="inp" placeholder="វាយកូដ ឬឈ្មោះជំងឺ ឧ. J06.9 / Pneumonia" onkeydown="if(event.key==='Enter'){event.preventDefault();addDx()}"><button class="btn" onclick="addDx()">＋</button></div><div class="dxs" id="dxList"></div></div>
+ <div class="sec"><h5>💊 វេជ្ជបញ្ជា Prescription</h5>${rx}</div>
+ <div class="sec"><h5>🧪 បញ្ជាតេស្តពិសោធន៍ / រូបភាព</h5><div class="labs">${labCat().map(c=>{const o=ordered.find(l=>l.code===c.code);return `<label><input type="checkbox" class="lab-ck" value="${esc(c.code)}" ${o?'checked disabled':''}> ${esc(c.name)} ${o?chip(o.status==='done'?'មានលទ្ធផល':'បានបញ្ជា',o.status==='done'?'ok':'wa'):`<span class="sub mono">${c.price?Math.round(c.price/1000)+'k':''}</span>`}</label>`;}).join('')}</div></div>
+ <div class="sec"><h5>📋 ផែនការ និងការសម្រេច</h5><div class="fg">${fld('ដំបូន្មាន / ផែនការព្យាបាល',ta('c_plan',v.plan),'wf')}
+ ${fld('ការសម្រេច',`<div class="radios">${[['home','🏠 ត្រឡប់ផ្ទះ'],['admit','🛏️ សម្រាកពេទ្យ'],['refer','🚑 បញ្ជូនបន្ត']].map(([k,l])=>`<label><input type="radio" name="disp" value="${k}" ${(v.disp||'home')===k?'checked':''}> ${l}</label>`).join('')}</div>`,'wf')}
+ ${fld('បញ្ជូនទៅ (បើមាន)',inp('c_ref',v.referTo))}${fld('ណាត់ជួបលើកក្រោយ',inp('c_fu',v.fu,'type="date" class="mono"'))}${fld('ប្រភេទបង់ប្រាក់',sel('c_pay',PAY,v.payType))}
+ ${fld('ប្រភេទករណី',`<label class="radios"><label><input type="checkbox" id="c_new" ${v.newCase?'checked':''}> ករណីថ្មី (New case)</label></label>`)}</div></div>`,
+ `<button class="btn ghost" onclick="closeModal()">បោះបង់</button><button class="btn pri" id="c_save">✅ បញ្ចប់ការពិនិត្យ</button>`,'xl');
+ renderDx();if(!v.dispensed&&!(v.rx||[]).length){mq('#rxT tbody').insertAdjacentHTML('beforeend',rxRow());rxCalc(mq('#rxT tbody tr .rx-d'));}
+ mq('#c_save').onclick=()=>saveConsult(id);}
+async function saveConsult(id){const v=get('visits',id),p=get('patients',v.patientId);const pend=mv('#dxIn');if(pend)addDx();const rx=v.dispensed?v.rx:readRx();
+ if(!CUR_DX.length&&!await ask('មិនទាន់មានរោគវិនិច្ឆ័យ។ បន្តរក្សាទុក?','បន្ត'))return;
+ if(p.allergies&&!v.dispensed){const al=p.allergies.toLowerCase().split(/[,;/\s]+/).filter(x=>x.length>2);const hit=rx.filter(r=>al.some(a=>r.name.toLowerCase().includes(a)));if(hit.length&&!await ask(`⚠️ អ្នកជំងឺមានអាឡែកហ្ស៊ី៖ <b>${esc(p.allergies)}</b><br>ថ្នាំ៖ <b>${hit.map(h=>esc(h.name)).join(', ')}</b><br>តើនៅតែបន្តឬ?`,'នៅតែបន្ត',1))return;}
+ const sm=stockMap();const short=rx.filter(r=>r.qty>(sm[r.drugId]||0));if(short.length)toast('ស្តុកមិនគ្រប់៖ '+short.map(r=>r.name).join(', '),'wa');
+ Object.assign(v,{vitals:readVitals(),cc:mv('#c_cc'),hpi:mv('#c_hpi'),pe:mv('#c_pe'),pmh:mv('#c_pmh'),dx:CUR_DX.slice(),rx,plan:mv('#c_plan'),disp:(mq('input[name=disp]:checked')||{}).value||'home',referTo:mv('#c_ref'),fu:mv('#c_fu'),payType:mv('#c_pay'),newCase:mq('#c_new').checked,status:'done',doctorId:v.doctorId||ME.id,doneAt:v.doneAt||Date.now()});
+ [...topM().querySelectorAll('.lab-ck:checked:not(:disabled)')].forEach(x=>{const c=labCat().find(k=>k.code===x.value);if(c)put('labs',{patientId:v.patientId,visitId:v.id,code:c.code,name:c.name,cat:c.cat,price:+c.price||0,unit:c.unit,ref:c.ref,status:'pending',orderedBy:ME.id,orderedAt:Date.now(),date:today()});});
+ put('visits',v);buildVisitInvoice(v);closeModal();toast('បានរក្សាទុក EMR','ok');render();
+ if(v.disp==='admit'&&!v.admissionId&&!all('admissions').some(a=>a.patientId===v.patientId&&a.status==='admitted'))admitForm(v.patientId,v.id);}
+function viewVisit(id){const v=get('visits',id),p=get('patients',v.patientId);const labs=all('labs').filter(l=>l.visitId===id);
+ openModal(`កំណត់ត្រា OPD — ${fmtD(v.date)} ${v.time||''}`,ptStrip(p)+`<div class="sec"><h5>សញ្ញាជីវិត</h5><div class="mono">${vitTxt(v.vitals)||'—'}</div></div>
+ <div class="sec"><h5>ប្រវត្តិ & ការពិនិត្យ</h5><p><span class="sub">CC៖</span> ${esc(v.cc||'—')}</p><p><span class="sub">HPI៖</span> ${esc(v.hpi||'—')}</p><p><span class="sub">PE៖</span> ${esc(v.pe||'—')}</p>${v.pmh?`<p><span class="sub">PMH៖</span> ${esc(v.pmh)}</p>`:''}</div>
+ <div class="sec"><h5>រោគវិនិច្ឆ័យ</h5>${dxTxt(v.dx)}</div>
+ <div class="sec"><h5>វេជ្ជបញ្ជា ${v.dispensed?chip('ចេញថ្នាំរួច','ok'):''}</h5>${(v.rx||[]).map(r=>`<div>• <b>${esc(r.name)}</b> — ${rxHow(r)} · ${r.days} ថ្ងៃ · <span class="mono">${r.qty}</span></div>`).join('')||'—'}</div>
+ ${labs.length?`<div class="sec"><h5>ពិសោធន៍</h5>${labTable(labs)}</div>`:''}
+ <div class="sec"><h5>ផែនការ</h5>${esc(v.plan||'—')}<div class="sub" style="margin-top:6px">ការសម្រេច៖ ${{home:'ត្រឡប់ផ្ទះ',admit:'សម្រាកពេទ្យ',refer:'បញ្ជូនបន្ត → '+esc(v.referTo||'')}[v.disp||'home']}${v.fu?' · ណាត់ '+fmtD(v.fu):''} · វេជ្ជ. ${esc(staffName(v.doctorId))}</div></div>`,
+ `${canSee('opd')?`<button class="btn" onclick="closeModal();consult('${id}')">✏️ កែប្រែ</button>`:''}${(v.rx||[]).length?`<button class="btn" onclick="printRx('${id}')">🖨️ វេជ្ជបញ្ជា</button>`:''}<button class="btn pri" onclick="closeModal()">បិទ</button>`,'lg');}
+function printRx(id){const v=get('visits',id),p=get('patients',v.patientId);
+ printHTML(phead('វេជ្ជបញ្ជា · PRESCRIPTION')+ptBlock(p,v.date)+`<p><b>រោគវិនិច្ឆ័យ៖</b> ${esc(dxPlain(v.dx))}</p><table><tr><th>#</th><th>ឈ្មោះថ្នាំ</th><th>របៀបប្រើ</th><th class="c">ថ្ងៃ</th><th class="c">ចំនួន</th></tr>${(v.rx||[]).map((r,i)=>`<tr><td>${i+1}</td><td><b>${esc(r.name)}</b></td><td>${rxHow(r)}</td><td class="c">${r.days}</td><td class="c">${r.qty} ${esc(r.unit||'')}</td></tr>`).join('')}</table>${v.plan?`<p><b>ដំបូន្មាន៖</b> ${esc(v.plan)}</p>`:''}${v.fu?`<p><b>ណាត់ជួបលើកក្រោយ៖</b> ${fmtD(v.fu)}</p>`:''}`+sig('វេជ្ជបណ្ឌិតព្យាបាល',staffName(v.doctorId)),'A5');}
+
+/* ================= BILLING HELPERS ================= */
+function upsertInvoice(o){let inv=get('invoices',o.id);if(inv&&inv.paid)return inv;inv=Object.assign(inv||{date:today(),paid:false},o);inv.total=inv.lines.reduce((s,l)=>s+(+l.q||0)*(+l.p||0),0);return put('invoices',inv);}
+function buildVisitInvoice(v){const lines=[{d:'ថ្លៃពិគ្រោះជំងឺ (Consultation)',q:1,p:+S().consultFee||0}];
+ (v.rx||[]).forEach(r=>{const d=get('drugs',r.drugId);lines.push({d:r.name,q:+r.qty||0,p:d?+d.price||0:0});});
+ all('labs').filter(l=>l.visitId===v.id).forEach(l=>lines.push({d:l.name,q:1,p:+l.price||0}));
+ upsertInvoice({id:'inv_'+v.id,src:'visit',srcId:v.id,patientId:v.patientId,label:'OPD '+fmtD(v.date),lines,payType:v.payType||'cash'});}
+function buildAdmInvoice(a){const days=losDays(a);const lines=[{d:'ថ្លៃគ្រែ (Bed/day) — '+a.bedId,q:days,p:+S().bedFee||0}];const g={};
+ all('stockMoves').filter(m=>m.admissionId===a.id).forEach(m=>g[m.drugId]=(g[m.drugId]||0)-m.qty);
+ Object.entries(g).forEach(([id,q])=>{const d=get('drugs',id)||{};if(q>0)lines.push({d:d.name||id,q,p:+d.price||0});});
+ all('labs').filter(l=>l.admissionId===a.id).forEach(l=>lines.push({d:l.name,q:1,p:+l.price||0}));
+ return upsertInvoice({id:'inv_'+a.id,src:'adm',srcId:a.id,patientId:a.patientId,label:'IPD '+a.bedId,lines,payType:a.payType||'cash',date:today()});}
+
+/* ================= IPD ================= */
+let IPD_WARD='all';
+function vIPD(){const occ=bedOcc(),beds=allBeds(),W=S().wards||[];const show=IPD_WARD==='all'?W:W.filter(w=>w.code===IPD_WARD);
+ const disc=all('admissions').filter(a=>a.status==='discharged').sort((a,b)=>b.dischargeAt-a.dischargeAt).slice(0,10);
+ return `<div class="bar"><div class="tabs" style="margin:0;border:0">${[['all','ទាំងអស់'],...W.map(w=>[w.code,w.name])].map(([k,l])=>`<button class="${IPD_WARD===k?'on':''}" onclick="IPD_WARD='${k}';render()">${esc(l)}</button>`).join('')}</div><span class="sp"></span>${chip(`ពេញ ${Object.keys(occ).length}/${beds.length}`,'sand')}<button class="btn pri" onclick="admitForm()">＋ ចូលសម្រាកពេទ្យ</button></div>
+ ${show.map(w=>`<div class="card"><h4>🛏️ ${esc(w.name)}<span class="sp"></span><span class="sub mono">${beds.filter(b=>b.ward===w.code&&occ[b.id]).length}/${w.beds}</span></h4><div class="beds">${beds.filter(b=>b.ward===w.code).map(b=>{const a=occ[b.id];if(!a)return `<div class="bed" onclick="admitForm(null,null,'${b.id}')"><div class="no">${b.id}</div><div class="sub" style="margin-top:14px">ទំនេរ · ＋</div></div>`;const p=get('patients',a.patientId)||{};return `<div class="bed occ" onclick="admChart('${a.id}')"><div class="no">${b.id} · ថ្ងៃទី ${losDays(a)}</div><b>${esc(p.name)}</b><div class="sub">${sexAge(p)}</div><div class="sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(a.dx||'')}</div></div>`;}).join('')}</div></div>`).join('')||'<div class="card empty">សូមកំណត់ផ្នែក និងគ្រែ ក្នុងការកំណត់</div>'}
+ <div class="card p0"><div style="padding:14px 16px 0"><h4>📤 អ្នកជំងឺចេញពីពេទ្យថ្មីៗ</h4></div><div class="tw"><table class="t"><thead><tr><th>ឈ្មោះ</th><th>គ្រែ</th><th>ចូល</th><th>ចេញ</th><th>ថ្ងៃ</th><th>លទ្ធផល</th></tr></thead><tbody>${disc.map(a=>`<tr class="click" onclick="admChart('${a.id}')"><td><b>${esc(pName(a.patientId))}</b></td><td class="mono">${a.bedId}</td><td class="mono">${fmtDT(a.admitAt)}</td><td class="mono">${fmtDT(a.dischargeAt)}</td><td class="mono">${losDays(a)}</td><td>${chip(OUTC[a.outcome]||'',a.outcome==='died'?'bad':a.outcome==='referred'?'sea':'ok')}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table></div></div>`;}
+function bedOptions(cur){const occ=bedOcc();return `<option value="">— ជ្រើសរើសគ្រែ —</option>`+(S().wards||[]).map(w=>`<optgroup label="${esc(w.name)}">${allBeds().filter(b=>b.ward===w.code&&(!occ[b.id]||b.id===cur)).map(b=>`<option value="${b.id}" ${b.id===cur?'selected':''}>${b.id}</option>`).join('')}</optgroup>`).join('');}
+function admitForm(pid,vid,bedId){if(!pid){pickPatient(p=>admitForm(p.id,vid,bedId));return;}const p=get('patients',pid);const ex=all('admissions').find(a=>a.patientId===pid&&a.status==='admitted');if(ex){toast('អ្នកជំងឺកំពុងសម្រាកពេទ្យរួចហើយ','wa');admChart(ex.id);return;}
+ const v=vid?get('visits',vid):null;const d=new Date();const dl=ymd(d)+'T'+nowHM();
+ openModal('ចូលសម្រាកព្យាបាល · Admission',ptStrip(p)+`<div class="fg" style="margin-top:12px">${fld('គ្រែ *',`<select id="a_bed">${bedOptions(bedId)}</select>`)}${fld('ពេលចូល',inp('a_at',dl,'type="datetime-local" class="mono"'))}${fld('ប្រភេទបង់ប្រាក់',sel('a_pay',PAY,v?v.payType:(p.hef?'hef':p.nssf?'nssf':'cash')))}
+ ${fld('រោគវិនិច្ឆ័យពេលចូល *',inp('a_dx',v?dxPlain(v.dx):'','list="icdl"'),'wf')}${fld('មូលហេតុ / កំណត់សម្គាល់',ta('a_note',v?[v.cc,v.plan].filter(Boolean).join(' — '):''),'wf')}</div>`,SAVE_FOOT('a_save'));
+ mq('#a_save').onclick=()=>{const bed=mv('#a_bed'),dx=mv('#a_dx');if(!bed||!dx){toast('សូមជ្រើសគ្រែ និងរោគវិនិច្ឆ័យ','bad');return;}if(bedOcc()[bed]){toast('គ្រែនេះមានអ្នកជំងឺហើយ','bad');return;}
+  const a=put('admissions',{patientId:pid,visitId:vid||'',bedId:bed,ward:bed.split('-')[0],admitAt:new Date(mv('#a_at')).getTime()||Date.now(),dx,note:mv('#a_note'),payType:mv('#a_pay'),doctorId:ME.id,status:'admitted',notes:[]});
+  if(v){v.admissionId=a.id;put('visits',v);}closeModal();toast('បានចូលសម្រាកពេទ្យ · '+bed,'ok');render();};}
+function admChart(aid){const a=get('admissions',aid),p=get('patients',a.patientId);const on=a.status==='admitted';const sm=stockMap();
+ const meds=all('stockMoves').filter(m=>m.admissionId===aid).sort((x,y)=>y.createdAt-x.createdAt);const labs=all('labs').filter(l=>l.admissionId===aid);
+ openModal(`កំណត់ត្រាសម្រាកព្យាបាល — គ្រែ ${a.bedId}`,ptStrip(p,chip(on?`ថ្ងៃទី ${losDays(a)}`:OUTC[a.outcome]||'ចេញ',on?'wa':'ok'))+
+ `<div class="fg" style="margin-top:10px;font-size:13px"><div><span class="sub">ចូល</span><br><span class="mono">${fmtDT(a.admitAt)}</span></div><div><span class="sub">រោគវិនិច្ឆ័យ</span><br>${esc(a.dx)}</div><div><span class="sub">វេជ្ជបណ្ឌិត</span><br>${esc(staffName(a.doctorId))}</div><div><span class="sub">បង់ប្រាក់</span><br>${esc(PAY[a.payType]||'')}</div></div>${a.note?`<div class="note">${esc(a.note)}</div>`:''}
+ ${!on?`<div class="sec"><h5>📤 សង្ខេបពេលចេញ</h5><div class="mono sub">${fmtDT(a.dischargeAt)} · ${losDays(a)} ថ្ងៃ</div><p><b>រោគវិនិច្ឆ័យចុងក្រោយ៖</b> ${esc(a.finalDx||'')}</p><p>${esc(a.summary||'')}</p>${a.dcAdvice?`<p><b>ដំបូន្មាន៖</b> ${esc(a.dcAdvice)}</p>`:''}</div>`:''}
+ <div class="sec"><h5>📝 កំណត់ត្រាប្រចាំថ្ងៃ (Progress notes)</h5>
+ ${on?`<div class="fg" style="grid-template-columns:repeat(auto-fill,minmax(100px,1fr))">${['bp','pulse','temp','rr','spo2'].map(k=>fld(k.toUpperCase(),`<input id="n_${k}" class="mono">`)).join('')}</div>${fld('កំណត់ត្រា / SOAP',ta('n_txt','','placeholder="S: ... O: ... A: ... P: ..."'))}<button class="btn sm pri" style="margin-top:8px" onclick="addNote('${aid}')">＋ បន្ថែមកំណត់ត្រា</button>`:''}
+ ${(a.notes||[]).slice().reverse().map(n=>`<div class="note"><div class="sub mono">${fmtDT(n.at)} · ${esc(staffName(n.by))} ${n.vitals?' · '+vitTxt(n.vitals):''}</div>${esc(n.text||'')}</div>`).join('')||'<div class="sub" style="margin-top:8px">មិនទាន់មានកំណត់ត្រា</div>'}</div>
+ <div class="sec"><h5>💊 ថ្នាំដែលបានផ្តល់</h5>${on?`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><select id="m_d" class="inp" style="flex:2;min-width:180px"><option value="">— ថ្នាំ —</option>${all('drugs').sort((x,y)=>x.name.localeCompare(y.name)).map(d=>`<option value="${d.id}">${esc(d.name)} (${sm[d.id]||0})</option>`).join('')}</select><input id="m_q" type="number" min="1" value="1" class="inp mono" style="width:80px"><input id="m_n" class="inp" placeholder="របៀបប្រើ" style="flex:1;min-width:120px"><button class="btn sm pri" onclick="giveMed('${aid}')">＋ ចេញថ្នាំ</button></div>`:''}
+ ${meds.length?`<div class="tw"><table class="t"><tbody>${meds.map(m=>{const d=get('drugs',m.drugId)||{};return `<tr><td class="mono sub">${fmtDT(m.createdAt)}</td><td><b>${esc(d.name)}</b></td><td class="sub">${esc(m.note||'')}</td><td class="r mono">${-m.qty} ${esc(d.unit||'')}</td></tr>`;}).join('')}</tbody></table></div>`:'<div class="sub">—</div>'}</div>
+ <div class="sec"><h5>🧪 ពិសោធន៍ / រូបភាព<span class="sp"></span>${on?`<button class="btn sm" onclick="labOrderForm('${a.patientId}',null,'${aid}')">＋ បញ្ជាតេស្ត</button>`:''}</h5>${labs.length?labTable(labs):'<div class="sub">—</div>'}</div>
+ ${on?`<div class="sec"><h5>🔁 ផ្លាស់ប្តូរគ្រែ</h5><div style="display:flex;gap:8px"><select id="tr_b" class="inp">${bedOptions(a.bedId)}</select><button class="btn sm" onclick="transferBed('${aid}')">ផ្លាស់ប្តូរ</button></div></div>`:''}`,
+ `<button class="btn" onclick="printAdm('${aid}')">🖨️ បោះពុម្ព</button><span class="sp"></span>${on?`<button class="btn wa" onclick="dischargeForm('${aid}')">📤 ចេញពីពេទ្យ</button>`:''}<button class="btn pri" onclick="closeModal()">បិទ</button>`,'xl');}
+function reAdm(aid){closeModal();admChart(aid);}
+function addNote(aid){const a=get('admissions',aid);const vit={};['bp','pulse','temp','rr','spo2'].forEach(k=>{const x=mv('#n_'+k);if(x)vit[k]=x;});const txt=mv('#n_txt');if(!txt&&!Object.keys(vit).length){toast('សូមបញ្ចូលកំណត់ត្រា','bad');return;}
+ a.notes=a.notes||[];a.notes.push({at:Date.now(),by:ME.id,text:txt,vitals:Object.keys(vit).length?vit:null});put('admissions',a);toast('បានបន្ថែម','ok');reAdm(aid);}
+function giveMed(aid){const a=get('admissions',aid);const d=mv('#m_d'),q=+mv('#m_q')||0;if(!d||q<=0){toast('សូមជ្រើសថ្នាំ និងចំនួន','bad');return;}if((stockMap()[d]||0)<q)toast('ស្តុកមិនគ្រប់ — បានកត់ត្រាដដែល','wa');
+ put('stockMoves',{drugId:d,qty:-q,type:'out',admissionId:aid,patientId:a.patientId,note:mv('#m_n'),date:today()});toast('បានចេញថ្នាំ','ok');reAdm(aid);}
+function transferBed(aid){const a=get('admissions',aid);const b=mv('#tr_b');if(!b||b===a.bedId)return;if(bedOcc()[b]){toast('គ្រែមានអ្នកជំងឺ','bad');return;}a.notes=a.notes||[];a.notes.push({at:Date.now(),by:ME.id,text:`ផ្លាស់ប្តូរគ្រែ ${a.bedId} → ${b}`});a.bedId=b;a.ward=b.split('-')[0];put('admissions',a);toast('បានផ្លាស់ប្តូរគ្រែ','ok');reAdm(aid);render();}
+function dischargeForm(aid){const a=get('admissions',aid);openModal('ចេញពីមន្ទីរពេទ្យ · Discharge',`<div class="fg">${fld('ពេលចេញ',inp('d_at',ymd(new Date())+'T'+nowHM(),'type="datetime-local" class="mono"'))}${fld('លទ្ធផល *',sel('d_out',[['','—'],...Object.entries(OUTC)],''))}${fld('រោគវិនិច្ឆ័យចុងក្រោយ *',inp('d_dx',a.dx,'list="icdl"'),'wf')}${fld('សង្ខេបការព្យាបាល',ta('d_sum',''),'wf')}${fld('ថ្នាំយកទៅផ្ទះ / ដំបូន្មាន',ta('d_adv',''),'wf')}</div>`,SAVE_FOOT('d_save'));
+ mq('#d_save').onclick=()=>{const out=mv('#d_out'),dx=mv('#d_dx');if(!out||!dx){toast('សូមបំពេញលទ្ធផល និងរោគវិនិច្ឆ័យ','bad');return;}
+  Object.assign(a,{status:'discharged',dischargeAt:new Date(mv('#d_at')).getTime()||Date.now(),outcome:out,finalDx:dx,summary:mv('#d_sum'),dcAdvice:mv('#d_adv'),dischargedBy:ME.id});put('admissions',a);buildAdmInvoice(a);
+  closeModal();closeModal();toast('អ្នកជំងឺបានចេញពីពេទ្យ · វិក្កយបត្របានបង្កើត','ok');render();admChart(aid);};}
+function printAdm(aid){const a=get('admissions',aid),p=get('patients',a.patientId);const meds=all('stockMoves').filter(m=>m.admissionId===aid);const labs=all('labs').filter(l=>l.admissionId===aid);
+ printHTML(phead(a.status==='discharged'?'លិខិតចេញពីមន្ទីរពេទ្យ · DISCHARGE SUMMARY':'កំណត់ត្រាសម្រាកព្យាបាល · INPATIENT RECORD')+ptBlock(p)+
+ `<div class="kv"><div>គ្រែ៖ <b>${a.bedId}</b></div><div>ចូល៖ ${fmtDT(a.admitAt)}</div><div>ចេញ៖ ${a.dischargeAt?fmtDT(a.dischargeAt):'—'}</div><div>រយៈពេល៖ ${losDays(a)} ថ្ងៃ</div></div>
+ <p><b>រោគវិនិច្ឆ័យពេលចូល៖</b> ${esc(a.dx)}</p>${a.finalDx?`<p><b>រោគវិនិច្ឆ័យចុងក្រោយ៖</b> ${esc(a.finalDx)} — <b>${OUTC[a.outcome]||''}</b></p>`:''}${a.summary?`<p><b>សង្ខេប៖</b> ${esc(a.summary)}</p>`:''}
+ <div class="sec"><h3>កំណត់ត្រាប្រចាំថ្ងៃ</h3><table>${(a.notes||[]).map(n=>`<tr><td style="width:130px">${fmtDT(n.at)}</td><td>${n.vitals?vitTxt(n.vitals)+'<br>':''}${esc(n.text||'')}</td></tr>`).join('')||'<tr><td>—</td></tr>'}</table></div>
+ <div class="sec"><h3>ថ្នាំ</h3><table>${meds.map(m=>{const d=get('drugs',m.drugId)||{};return `<tr><td>${fmtDT(m.createdAt)}</td><td>${esc(d.name)}</td><td>${-m.qty} ${esc(d.unit||'')}</td><td>${esc(m.note||'')}</td></tr>`;}).join('')||'<tr><td>—</td></tr>'}</table></div>
+ ${labs.length?`<div class="sec"><h3>ពិសោធន៍</h3><table>${labs.map(l=>`<tr><td>${esc(l.name)}</td><td>${esc(l.result||'រង់ចាំ')} ${esc(l.unit||'')}</td></tr>`).join('')}</table></div>`:''}
+ ${a.dcAdvice?`<p><b>ថ្នាំយកទៅផ្ទះ / ដំបូន្មាន៖</b> ${esc(a.dcAdvice)}</p>`:''}`+sig('វេជ្ជបណ្ឌិតព្យាបាល',staffName(a.doctorId)));}
+
+/* ================= PHARMACY ================= */
+let PH_TAB='queue';
+function vPharm(){const sm=stockMap();const T=PH_TAB;let b='';
+ if(T==='queue'){const q=all('visits').filter(v=>v.status==='done'&&(v.rx||[]).length&&!v.dispensed).sort((a,b)=>a.doneAt-b.doneAt);
+  b=`<div class="card p0"><div class="tw"><table class="t"><thead><tr><th>ថ្ងៃ</th><th>អ្នកជំងឺ</th><th>វេជ្ជបញ្ជា</th><th>បង់ប្រាក់</th><th class="r"></th></tr></thead><tbody>${q.map(v=>{const p=get('patients',v.patientId)||{};const inv=get('invoices','inv_'+v.id);return `<tr><td class="mono">${fmtD(v.date)}<div class="sub">${v.time}</div></td><td><b>${esc(p.name)}</b><div class="sub mono">${esc(p.mrn)}</div></td><td>${v.rx.map(r=>`<div>${esc(r.name)} <b class="mono">×${r.qty}</b> ${(sm[r.drugId]||0)<r.qty?chip('ស្តុកខ្វះ','bad'):''}</div>`).join('')}</td><td>${inv?(inv.paid?chip('បានបង់','ok'):chip('មិនទាន់បង់','wa')):''}</td><td class="r" style="white-space:nowrap"><button class="btn sm" onclick="printRx('${v.id}')">🖨️</button> <button class="btn sm pri" onclick="dispense('${v.id}')">✅ ចេញថ្នាំ</button></td></tr>`;}).join('')||'<tr><td colspan="5" class="empty">គ្មានវេជ្ជបញ្ជារង់ចាំ ✓</td></tr>'}</tbody></table></div></div>`;}
+ if(T==='stock'){const soon=Date.now()+90*864e5;b=`<div class="bar"><div class="srch"><input placeholder="🔎 ស្វែងរកថ្នាំ..." oninput="document.querySelectorAll('#dtab tr').forEach(r=>r.style.display=r.dataset.n.includes(this.value.toLowerCase())?'':'none')"></div><button class="btn" onclick="exportStock()">⬇ CSV</button><button class="btn pri" onclick="drugForm()">＋ ថ្នាំថ្មី</button></div>
+  <div class="card p0"><div class="tw"><table class="t"><thead><tr><th>ឈ្មោះថ្នាំ</th><th>ទម្រង់</th><th class="r">ស្តុក</th><th class="r">អប្បបរមា</th><th>ផុតកំណត់</th><th class="r">តម្លៃ</th><th class="r"></th></tr></thead><tbody id="dtab">${all('drugs').sort((a,b)=>a.name.localeCompare(b.name)).map(d=>{const s=sm[d.id]||0;const ex=d.expiry&&new Date(d.expiry).getTime();return `<tr data-n="${esc(d.name.toLowerCase())}"><td><b>${esc(d.name)}</b></td><td class="sub">${esc(d.form||'')} · ${esc(d.unit||'')}</td><td class="r mono" style="color:${s<=0?'var(--bad)':s<=d.min?'var(--wa)':'var(--ok)'}">${s}</td><td class="r mono sub">${d.min||0}</td><td class="mono">${d.expiry?fmtD(d.expiry):'—'} ${ex&&ex<Date.now()?chip('ផុត','bad'):ex&&ex<soon?chip('ជិតផុត','wa'):''}</td><td class="r mono">${money(d.price)}</td><td class="r" style="white-space:nowrap"><button class="btn sm" onclick="stockIn('${d.id}')">± ស្តុក</button> <button class="ib" style="color:var(--mu)" onclick="drugForm('${d.id}')">✏️</button></td></tr>`;}).join('')}</tbody></table></div></div>`;}
+ if(T==='moves'){const mv_=all('stockMoves').sort((a,b)=>b.createdAt-a.createdAt).slice(0,300);b=`<div class="card p0"><div class="tw"><table class="t"><thead><tr><th>ពេល</th><th>ថ្នាំ</th><th>ប្រភេទ</th><th class="r">ចំនួន</th><th>ព័ត៌មាន</th><th>ដោយ</th></tr></thead><tbody>${mv_.map(m=>{const d=get('drugs',m.drugId)||{};return `<tr><td class="mono sub">${fmtDT(m.createdAt)}</td><td>${esc(d.name||'')}</td><td>${m.type==='in'?chip('ចូល','ok'):m.type==='adj'?chip('កែតម្រូវ','wa'):chip('ចេញ','sea')}</td><td class="r mono" style="color:${m.qty>0?'var(--ok)':'var(--coral)'}">${m.qty>0?'+':''}${m.qty}</td><td class="sub">${m.patientId?esc(pName(m.patientId)):''} ${esc(m.batch?'Lot '+m.batch:'')} ${esc(m.note||'')}</td><td class="sub">${esc(staffName(m.by))}</td></tr>`;}).join('')||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table></div></div>`;}
+ return `<div class="tabs">${[['queue','📋 វេជ្ជបញ្ជារង់ចាំ'],['stock','📦 ស្តុកថ្នាំ'],['moves','🔁 ប្រវត្តិចេញ-ចូល']].map(t=>`<button class="${T===t[0]?'on':''}" onclick="PH_TAB='${t[0]}';render()">${t[1]}</button>`).join('')}</div>${b}`;}
+async function dispense(id){const v=get('visits',id);const sm=stockMap();const short=v.rx.filter(r=>(sm[r.drugId]||0)<r.qty);
+ if(short.length&&!await ask(`ស្តុកមិនគ្រប់សម្រាប់៖ <b>${short.map(r=>esc(r.name)).join(', ')}</b><br>បន្តចេញថ្នាំ (ស្តុកនឹងអវិជ្ជមាន)?`,'បន្ត'))return;
+ v.rx.forEach(r=>{if(r.drugId&&r.qty>0)put('stockMoves',{drugId:r.drugId,qty:-Math.abs(r.qty),type:'out',visitId:v.id,patientId:v.patientId,date:today()});});
+ v.dispensed=true;v.dispensedBy=ME.id;v.dispensedAt=Date.now();put('visits',v);toast('បានចេញថ្នាំ','ok');render();}
+function drugForm(id){const d=id?get('drugs',id):{};openModal(id?'កែប្រែថ្នាំ':'បន្ថែមថ្នាំថ្មី',`<div class="fg">${fld('ឈ្មោះថ្នាំ + កម្លាំង *',inp('d_name',d.name,'placeholder="Paracetamol 500mg"'),'wf')}${fld('ទម្រង់',sel('d_form',[['tab','Tablet'],['cap','Capsule'],['syr','Syrup'],['inj','Injection'],['sachet','Sachet'],['cream','Cream'],['drop','Drops'],['other','Other']],d.form||'tab'))}${fld('ឯកតា',inp('d_unit',d.unit||'គ្រាប់'))}${fld('តម្លៃ/ឯកតា (៛)',inp('d_price',d.price||0,'type="number" class="mono"'))}${fld('ស្តុកអប្បបរមា',inp('d_min',d.min||0,'type="number" class="mono"'))}</div>${id?'':`<div class="sec"><h5>ស្តុកដំបូង (ជាជម្រើស)</h5><div class="fg">${fld('ចំនួន',inp('d_q0','','type="number" class="mono"'))}${fld('ផុតកំណត់',inp('d_ex0','','type="date" class="mono"'))}</div></div>`}`,(id?`<button class="btn bad" onclick="delDrug('${id}')">លុប</button><span class="sp"></span>`:'')+SAVE_FOOT('d_save'));
+ mq('#d_save').onclick=()=>{const name=mv('#d_name');if(!name){toast('សូមបញ្ចូលឈ្មោះ','bad');return;}Object.assign(d,{name,form:mv('#d_form'),unit:mv('#d_unit'),price:+mv('#d_price')||0,min:+mv('#d_min')||0});
+  if(!id){const q=+mv('#d_q0')||0,ex=mv('#d_ex0');if(ex)d.expiry=ex;put('drugs',d);if(q>0)put('stockMoves',{drugId:d.id,qty:q,type:'in',expiry:ex,date:today(),note:'ស្តុកដំបូង'});}else put('drugs',d);closeModal();toast('បានរក្សាទុក','ok');render();};}
+async function delDrug(id){if(!await ask('លុបថ្នាំនេះ?','លុប',1))return;del('drugs',id);closeModal();render();}
+function stockIn(id){const d=get('drugs',id);openModal('កែប្រែស្តុក · '+esc(d.name),`<div class="fg">${fld('ប្រភេទ',sel('s_t',[['in','➕ ទទួលចូល'],['adj','➖ ដកចេញ (ខូច/ផុតកំណត់/បាត់)']],'in'))}${fld('ចំនួន *',inp('s_q','','type="number" min="1" class="mono"'))}${fld('លេខ Lot',inp('s_b',''))}${fld('ផុតកំណត់',inp('s_e','','type="date" class="mono"'))}${fld('អ្នកផ្គត់ផ្គង់ / មូលហេតុ',inp('s_n',''),'wf')}</div><div class="sub">ស្តុកបច្ចុប្បន្ន៖ <b class="mono">${stockMap()[id]||0}</b> ${esc(d.unit||'')}</div>`,SAVE_FOOT('s_save'),'sm');
+ mq('#s_save').onclick=()=>{const t=mv('#s_t'),q=Math.abs(+mv('#s_q')||0);if(!q){toast('សូមបញ្ចូលចំនួន','bad');return;}const ex=mv('#s_e');
+  put('stockMoves',{drugId:id,qty:t==='in'?q:-q,type:t,batch:mv('#s_b'),expiry:ex,note:mv('#s_n'),date:today()});
+  if(t==='in'&&ex&&(!d.expiry||ex<d.expiry||(stockMap()[id]||0)<=q)){d.expiry=ex;put('drugs',d);}closeModal();toast('បានកែស្តុក','ok');render();};}
+function exportStock(){const sm=stockMap();download('stock-'+today()+'.csv',csv([['Drug','Form','Unit','Stock','Min','Expiry','Price'],...all('drugs').map(d=>[d.name,d.form,d.unit,sm[d.id]||0,d.min,d.expiry,d.price])]),'text/csv');}
+
+/* ================= LAB ================= */
+let LAB_TAB='pending',LAB_DATE=null;
+function labTable(labs,click){return `<div class="tw"><table class="t"><thead><tr><th>ថ្ងៃ</th><th>តេស្ត</th><th>លទ្ធផល</th><th>ស្ថានភាព</th></tr></thead><tbody>${labs.map(l=>`<tr class="click" onclick="${canSee('lab')?`labResult('${l.id}')`:`printLab('${l.id}')`}"><td class="mono">${fmtD(l.date)}</td><td>${l.cat==='imaging'?'📷':'🧪'} ${esc(l.name)}</td><td>${l.status==='done'?`<b style="color:${l.abn?'var(--coral)':'inherit'}">${esc(String(l.result||'').slice(0,60))}</b> <span class="sub">${esc(l.unit||'')}</span>`:'—'}</td><td>${l.status==='done'?chip(l.abn?'មិនប្រក្រតី':'រួចរាល់',l.abn?'bad':'ok'):chip('រង់ចាំ','wa')}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">គ្មានទិន្នន័យ</td></tr>'}</tbody></table></div>`;}
+function vLab(){const T=LAB_TAB,d=LAB_DATE||today();let ls;
+ if(T==='pending')ls=all('labs').filter(l=>l.status!=='done').sort((a,b)=>a.orderedAt-b.orderedAt);else ls=all('labs').filter(l=>l.status==='done'&&ymd(new Date(l.resultAt))===d).sort((a,b)=>b.resultAt-a.resultAt);
+ return `<div class="tabs">${[['pending','⏳ រង់ចាំលទ្ធផល ('+all('labs').filter(l=>l.status!=='done').length+')'],['done','✅ លទ្ធផលរួចរាល់']].map(t=>`<button class="${T===t[0]?'on':''}" onclick="LAB_TAB='${t[0]}';render()">${t[1]}</button>`).join('')}</div>
+ <div class="bar">${T==='done'?`<input type="date" class="mono" value="${d}" onchange="LAB_DATE=this.value;render()">`:''}<span class="sp"></span><button class="btn pri" onclick="labOrderForm()">＋ បញ្ជាតេស្តថ្មី</button></div>
+ <div class="card p0"><div class="tw"><table class="t"><thead><tr><th>ពេលបញ្ជា</th><th>អ្នកជំងឺ</th><th>តេស្ត</th><th>ប្រភព</th><th>${T==='done'?'លទ្ធផល':'អ្នកបញ្ជា'}</th><th class="r"></th></tr></thead><tbody>
+ ${ls.map(l=>{const p=get('patients',l.patientId)||{};return `<tr><td class="mono sub">${fmtDT(l.orderedAt)}</td><td><b>${esc(p.name)}</b><div class="sub">${sexAge(p)} · <span class="mono">${esc(p.mrn)}</span></div></td><td>${l.cat==='imaging'?chip('📷 Imaging','sea'):chip('🧪 Lab','ac')} ${esc(l.name)}</td><td>${l.admissionId?chip('IPD','sand'):l.visitId?chip('OPD','ac'):chip('ផ្ទាល់')}</td><td>${T==='done'?`<b style="color:${l.abn?'var(--coral)':'inherit'}">${esc(String(l.result).slice(0,50))}</b>`:esc(staffName(l.orderedBy))}</td><td class="r" style="white-space:nowrap">${T==='done'?`<button class="btn sm" onclick="printLab('${l.id}')">🖨️</button> `:''}<button class="btn sm ${T==='done'?'':'pri'}" onclick="labResult('${l.id}')">${T==='done'?'✏️':'បញ្ចូលលទ្ធផល'}</button></td></tr>`;}).join('')||'<tr><td colspan="6" class="empty">គ្មានទិន្នន័យ</td></tr>'}
+ </tbody></table></div></div>`;}
+function labOrderForm(pid,vid,aid){if(!pid){pickPatient(p=>labOrderForm(p.id,vid,aid));return;}const p=get('patients',pid);
+ openModal('បញ្ជាតេស្តពិសោធន៍ / រូបភាព',ptStrip(p)+`<div class="labs" style="margin-top:12px">${labCat().map(c=>`<label><input type="checkbox" class="lo-ck" value="${esc(c.code)}"> ${esc(c.name)} <span class="sub mono">${money(c.price)}</span></label>`).join('')}</div>${fld('កំណត់សម្គាល់គ្លីនិក',ta('lo_n',''))}`,SAVE_FOOT('lo_save'),'lg');
+ mq('#lo_save').onclick=()=>{const cks=[...topM().querySelectorAll('.lo-ck:checked')];if(!cks.length){toast('សូមជ្រើសតេស្ត','bad');return;}const grp=uid('lo');const note=mv('#lo_n');
+  cks.forEach(x=>{const c=labCat().find(k=>k.code===x.value);put('labs',{patientId:pid,visitId:vid||'',admissionId:aid||'',group:aid||vid?'':grp,code:c.code,name:c.name,cat:c.cat,price:+c.price||0,unit:c.unit,ref:c.ref,note,status:'pending',orderedBy:ME.id,orderedAt:Date.now(),date:today()});});
+  if(!aid&&!vid){const ls=all('labs').filter(l=>l.group===grp);upsertInvoice({id:'inv_'+grp,src:'lab',srcId:grp,patientId:pid,label:'Lab '+fmtD(today()),lines:ls.map(l=>({d:l.name,q:1,p:l.price})),payType:p.hef?'hef':p.nssf?'nssf':'cash'});}
+  if(vid){const v=get('visits',vid);if(v)buildVisitInvoice(v);}
+  closeModal();toast(`បានបញ្ជា ${cks.length} តេស្ត`,'ok');if(aid)reAdm(aid);render();};}
+function labResult(id){const l=get('labs',id),p=get('patients',l.patientId);
+ openModal(`លទ្ធផល · ${esc(l.name)}`,ptStrip(p)+`<div class="sub" style="margin:10px 0">បញ្ជាដោយ ${esc(staffName(l.orderedBy))} · ${fmtDT(l.orderedAt)} ${l.ref?' · តម្លៃយោង៖ <b class="mono">'+esc(l.ref)+'</b>':''} ${l.unit?' · ឯកតា៖ '+esc(l.unit):''}</div>${l.note?`<div class="note">${esc(l.note)}</div>`:''}
+ ${fld('លទ្ធផល *',ta('l_r',l.result,'style="min-height:110px" placeholder="'+(l.cat==='imaging'?'Findings / Impression...':'Result value...')+'"'))}<label class="radios" style="margin-top:10px"><label><input type="checkbox" id="l_abn" ${l.abn?'checked':''}> ⚠️ លទ្ធផលមិនប្រក្រតី (Abnormal)</label></label>`,
+ `${canSee('lab')?`<button class="btn bad" onclick="delLab('${id}')">លុប</button>`:''}<span class="sp"></span>${l.status==='done'?`<button class="btn" onclick="printLab('${id}')">🖨️</button>`:''}`+SAVE_FOOT('l_save'));
+ mq('#l_save').onclick=()=>{const r=mv('#l_r');if(!r){toast('សូមបញ្ចូលលទ្ធផល','bad');return;}Object.assign(l,{result:r,abn:mq('#l_abn').checked,status:'done',resultAt:l.resultAt||Date.now(),resultBy:ME.id});put('labs',l);closeModal();toast('បានរក្សាទុកលទ្ធផល','ok');render();};}
+async function delLab(id){if(!await ask('លុបការបញ្ជាតេស្តនេះ?','លុប',1))return;const l=get('labs',id);del('labs',id);if(l.visitId){const v=get('visits',l.visitId);if(v)buildVisitInvoice(v);}closeModal();render();}
+function printLab(id){const l=get('labs',id),p=get('patients',l.patientId);printHTML(phead((l.cat==='imaging'?'លទ្ធផលរូបភាពវេជ្ជសាស្ត្រ · IMAGING REPORT':'លទ្ធផលពិសោធន៍ · LABORATORY REPORT'))+ptBlock(p,l.date)+`<table><tr><th>តេស្ត</th><th>លទ្ធផល</th><th>ឯកតា</th><th>តម្លៃយោង</th></tr><tr><td><b>${esc(l.name)}</b></td><td style="white-space:pre-wrap"><b>${esc(l.result||'')}</b>${l.abn?' (H/L)':''}</td><td>${esc(l.unit||'')}</td><td>${esc(l.ref||'')}</td></tr></table><p class="mono"><small>បញ្ជា៖ ${fmtDT(l.orderedAt)} (${esc(staffName(l.orderedBy))}) · លទ្ធផល៖ ${fmtDT(l.resultAt)}</small></p>`+sig('អ្នកពិសោធន៍',staffName(l.resultBy)),'A5');}
+
+/* ================= BILLING ================= */
+let BILL_TAB='unpaid',BILL_DATE=null;
+function vBill(){const T=BILL_TAB,d=BILL_DATE||today();let ls=all('invoices').filter(i=>i.total>0||i.paid);
+ ls=T==='unpaid'?ls.filter(i=>!i.paid).sort((a,b)=>a.createdAt-b.createdAt):ls.filter(i=>i.paid&&ymd(new Date(i.paidAt))===d).sort((a,b)=>b.paidAt-a.paidAt);
+ const sum=ls.reduce((s,i)=>s+(T==='unpaid'?+i.total:+i.due||0),0);
+ return `<div class="tabs">${[['unpaid','🧾 មិនទាន់បង់'],['paid','✅ បានបង់']].map(t=>`<button class="${T===t[0]?'on':''}" onclick="BILL_TAB='${t[0]}';render()">${t[1]}</button>`).join('')}</div>
+ <div class="bar">${T==='paid'?`<input type="date" class="mono" value="${d}" onchange="BILL_DATE=this.value;render()">`:''}<span class="sp"></span>${chip(`${ls.length} វិក្កយបត្រ · ${T==='paid'?'ប្រមូលបាន':'សរុប'} ${money(sum)}`,'sand')}</div>
+ <div class="card p0"><div class="tw"><table class="t"><thead><tr><th>#</th><th>ថ្ងៃ</th><th>អ្នកជំងឺ</th><th>ប្រភព</th><th class="r">សរុប</th><th>ប្រភេទ</th>${T==='paid'?'<th class="r">បានបង់</th>':''}<th class="r"></th></tr></thead><tbody>
+ ${ls.map(i=>`<tr class="click" onclick="invoiceView('${i.id}')"><td class="mono">${invNo(i)}</td><td class="mono">${fmtD(i.date)}</td><td><b>${esc(pName(i.patientId))}</b></td><td>${esc(i.label||'')}</td><td class="r mono">${money(i.total)}</td><td>${esc(PAY[i.payType]||'')}</td>${T==='paid'?`<td class="r mono">${money(i.due)}</td>`:''}<td class="r"><button class="btn sm ${i.paid?'':'pri'}">${i.paid?'មើល':'💵 គិតលុយ'}</button></td></tr>`).join('')||`<tr><td colspan="8" class="empty">គ្មានទិន្នន័យ</td></tr>`}
+ </tbody></table></div></div>`;}
+function invCalc(id){const i=get('invoices',id);const pay=mv('#i_pay'),disc=+mv('#i_disc')||0,tot=+i.total||0;const cov=['hef','nssf','free'].includes(pay)?Math.max(0,tot-disc):0;const due=Math.max(0,tot-disc-cov);
+ mq('#i_tot').innerHTML=`<div><span>សរុប</span><b class="mono">${money(tot)}</b></div><div><span>បញ្ចុះតម្លៃ</span><b class="mono">-${money(disc)}</b></div><div><span>គាំទ្រដោយ ${esc(PAY[pay]||'')}</span><b class="mono">-${money(cov)}</b></div><div class="big"><span>អ្នកជំងឺត្រូវបង់</span><b class="mono">${money(due)}</b></div>`;return {pay,disc,cov,due};}
+function invoiceView(id){const i=get('invoices',id),p=get('patients',i.patientId)||{};const ed=!i.paid;
+ openModal(`វិក្កយបត្រ #${invNo(i)} · ${esc(i.label||'')}`,ptStrip(p)+`<div class="tw" style="margin-top:12px"><table class="t"><thead><tr><th>បរិយាយ</th><th class="r">ចំនួន</th><th class="r">តម្លៃ</th><th class="r">សរុប</th></tr></thead><tbody>${i.lines.map(l=>`<tr><td>${esc(l.d)}</td><td class="r mono">${l.q}</td><td class="r mono">${money(l.p)}</td><td class="r mono">${money(l.q*l.p)}</td></tr>`).join('')}</tbody></table></div>
+ <div class="fg" style="margin-top:12px">${fld('ប្រភេទបង់ប្រាក់',sel('i_pay',PAY,i.payType||'cash',`${ed?'':'disabled'} onchange="invCalc('${id}')"`))}${fld('បញ្ចុះតម្លៃ (៛)',inp('i_disc',i.disc||0,`type="number" min="0" class="mono" ${ed?'':'disabled'} oninput="invCalc('${id}')"`))}</div><div class="tot" id="i_tot"></div>${i.paid?`<div class="alert wa" style="margin-top:10px">✅ បានបង់ ${fmtDT(i.paidAt)} · ${esc(staffName(i.paidBy))}</div>`:''}`,
+ `<button class="btn" onclick="printReceipt('${id}')">🖨️ វិក្កយបត្រ 80mm</button><span class="sp"></span><button class="btn ghost" onclick="closeModal()">បិទ</button>${ed&&canSee('billing')?`<button class="btn pri" onclick="payInvoice('${id}')">💵 ទទួលប្រាក់ & បោះពុម្ព</button>`:''}`);invCalc(id);}
+function payInvoice(id){const i=get('invoices',id);const c=invCalc(id);Object.assign(i,{payType:c.pay,disc:c.disc,covered:c.cov,due:c.due,paid:true,paidAt:Date.now(),paidBy:ME.id});put('invoices',i);closeModal();toast('បានទទួលប្រាក់ '+money(c.due),'ok');render();printReceipt(id);}
+function printReceipt(id){const i=get('invoices',id),p=get('patients',i.patientId)||{},s=S();
+ printHTML(`<div class="c"><b class="ser" style="font-size:13px">${esc(s.hospKm)}</b><br>${esc(s.hospEn)}<br><small>${esc(s.addr||'')} ${esc(s.phone||'')}</small></div><div class="c b" style="margin:6px 0;border-top:1px dashed #000;border-bottom:1px dashed #000;padding:3px">វិក្កយបត្រ · RECEIPT #${invNo(i)}</div>
+ <div>អ្នកជំងឺ៖ <b>${esc(p.name)}</b> (${esc(p.mrn||'')})<br>ថ្ងៃ៖ ${fmtDT(i.paidAt||Date.now())}<br>${esc(i.label||'')}</div>
+ <table>${i.lines.map(l=>`<tr><td>${esc(l.d)}<br><small>${l.q} × ${Math.round(l.p).toLocaleString()}</small></td><td class="r">${Math.round(l.q*l.p).toLocaleString()}</td></tr>`).join('')}</table>
+ <table><tr><td>សរុប</td><td class="r">${money(i.total)}</td></tr>${i.disc?`<tr><td>បញ្ចុះតម្លៃ</td><td class="r">-${money(i.disc)}</td></tr>`:''}${i.covered?`<tr><td>${esc(PAY[i.payType])}</td><td class="r">-${money(i.covered)}</td></tr>`:''}<tr><td class="b">ត្រូវបង់</td><td class="r b">${money(i.paid?i.due:i.total)}</td></tr></table>
+ <div class="c" style="margin-top:6px">${i.paid?'✔ បានបង់ · '+esc(staffName(i.paidBy)):'មិនទាន់បង់'}<br>សូមអរគុណ · Thank you</div>`,'80mm');}
+
+/* ================= REPORTS (HMIS) ================= */
+let REP_M=null;
+const inMonth=(d,m)=>String(d||'').slice(0,7)===m;
+function repData(m){const [Y,M]=m.split('-').map(Number);const dim=new Date(Y,M,0).getDate();const ms=new Date(Y,M-1,1).getTime(),me=new Date(Y,M,1).getTime();
+ const vs=all('visits').filter(v=>inMonth(v.date,m)&&v.status==='done');
+ const opd=AGE.map(g=>({g:g[0],nm:0,nf:0,om:0,of:0}));vs.forEach(v=>{const p=get('patients',v.patientId);if(!p)return;const a=ageOf(p,v.date);const i=AGE.findIndex(g=>a>=g[1]&&a<g[2]);if(i<0)return;opd[i][(v.newCase?'n':'o')+(p.sex==='F'?'f':'m')]++;});
+ const dx={};vs.forEach(v=>(v.dx||[]).forEach(d=>{const k=(d.code||'—')+'|'+d.name;dx[k]=(dx[k]||0)+1;}));
+ const ad=all('admissions');const admIn=ad.filter(a=>a.admitAt>=ms&&a.admitAt<me);const dis=ad.filter(a=>a.status==='discharged'&&a.dischargeAt>=ms&&a.dischargeAt<me);
+ let bedDays=0;ad.forEach(a=>{const s=Math.max(a.admitAt,ms),e=Math.min(a.status==='discharged'?a.dischargeAt:Date.now(),me);if(e>s)bedDays+=(e-s)/864e5;});
+ const nb=allBeds().length;const outc={};dis.forEach(a=>outc[a.outcome]=(outc[a.outcome]||0)+1);
+ const labs={};all('labs').filter(l=>inMonth(l.date,m)).forEach(l=>{const k=l.name;labs[k]=labs[k]||{n:0,d:0,a:0};labs[k].n++;if(l.status==='done')labs[k].d++;if(l.abn)labs[k].a++;});
+ const fin={};let col=0;all('invoices').filter(i=>inMonth(i.date,m)&&(i.total>0)).forEach(i=>{const k=i.payType||'cash';fin[k]=fin[k]||{n:0,t:0,c:0};fin[k].n++;fin[k].t+=+i.total||0;if(i.paid){fin[k].c+=+i.due||0;col+=+i.due||0;}});
+ const dr={};all('stockMoves').filter(x=>x.type==='out'&&inMonth(x.date,m)).forEach(x=>dr[x.drugId]=(dr[x.drugId]||0)-x.qty);
+ const att=all('staff').filter(s=>s.active!==false).map(s=>{const rs=all('attendance').filter(a=>a.staffId===s.id&&inMonth(a.date,m));return {s,p:rs.filter(r=>r.status==='present'||r.status==='late').length,l:rs.filter(r=>r.status==='late').length,v:rs.filter(r=>r.status==='leave').length,a:rs.filter(r=>r.status==='absent').length,h:rs.reduce((t,r)=>t+hrs(r.in,r.out),0)};});
+ return {m,dim,vs,opd,topDx:Object.entries(dx).sort((a,b)=>b[1]-a[1]).slice(0,10),admIn,dis,bedDays,nb,occ:nb?bedDays/(nb*dim)*100:0,los:dis.length?dis.reduce((s,a)=>s+losDays(a),0)/dis.length:0,outc,labs,fin,col,topDr:Object.entries(dr).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([id,q])=>[(get('drugs',id)||{}).name||id,q]),att};}
+function repBody(r,pr){const T=pr?'':'class="t"';const tot=k=>r.opd.reduce((s,x)=>s+x[k],0);const box=(h,b)=>pr?`<div class="sec"><h3>${h}</h3>${b}</div>`:`<div class="card"><h4>${h}</h4><div class="tw">${b}</div></div>`;
+ return box('១. ពិគ្រោះជំងឺក្រៅ (OPD) តាមក្រុមអាយុ និងភេទ',`<table ${T}><thead><tr><th>ក្រុមអាយុ</th><th class="r">ថ្មី ប្រុស</th><th class="r">ថ្មី ស្រី</th><th class="r">ចាស់ ប្រុស</th><th class="r">ចាស់ ស្រី</th><th class="r">សរុប</th></tr></thead><tbody>${r.opd.map(x=>`<tr><td>${x.g}</td><td class="r mono">${x.nm}</td><td class="r mono">${x.nf}</td><td class="r mono">${x.om}</td><td class="r mono">${x.of}</td><td class="r mono"><b>${x.nm+x.nf+x.om+x.of}</b></td></tr>`).join('')}<tr><td><b>សរុប</b></td><td class="r mono"><b>${tot('nm')}</b></td><td class="r mono"><b>${tot('nf')}</b></td><td class="r mono"><b>${tot('om')}</b></td><td class="r mono"><b>${tot('of')}</b></td><td class="r mono"><b>${r.vs.length}</b></td></tr></tbody></table>`)+
+ box('២. ជំងឺញឹកញាប់បំផុត ១០ (Top 10 diagnoses)',`<table ${T}><thead><tr><th>#</th><th>ICD-10</th><th>ជំងឺ</th><th class="r">ករណី</th></tr></thead><tbody>${r.topDx.map(([k,n],i)=>{const [c,nm]=k.split('|');return `<tr><td>${i+1}</td><td class="mono">${esc(c)}</td><td>${esc(nm)}</td><td class="r mono">${n}</td></tr>`;}).join('')||'<tr><td colspan="4">—</td></tr>'}</tbody></table>`)+
+ box('៣. សម្រាកព្យាបាល (IPD)',`<table ${T}><tbody><tr><td>ចំនួនចូលសម្រាក</td><td class="r mono">${r.admIn.length}</td><td>ចំនួនចេញ</td><td class="r mono">${r.dis.length}</td></tr><tr><td>ថ្ងៃគ្រែសរុប (Bed-days)</td><td class="r mono">${r.bedDays.toFixed(1)}</td><td>អត្រាប្រើប្រាស់គ្រែ</td><td class="r mono">${r.occ.toFixed(1)}%</td></tr><tr><td>រយៈពេលសម្រាកមធ្យម (ALOS)</td><td class="r mono">${r.los.toFixed(1)}</td><td>ចំនួនគ្រែ</td><td class="r mono">${r.nb}</td></tr>${Object.entries(OUTC).map(([k,l])=>`<tr><td>${l}</td><td class="r mono">${r.outc[k]||0}</td><td></td><td></td></tr>`).join('')}</tbody></table>`)+
+ box('៤. ពិសោធន៍ និងរូបភាព',`<table ${T}><thead><tr><th>តេស្ត</th><th class="r">បញ្ជា</th><th class="r">រួចរាល់</th><th class="r">មិនប្រក្រតី</th></tr></thead><tbody>${Object.entries(r.labs).map(([k,x])=>`<tr><td>${esc(k)}</td><td class="r mono">${x.n}</td><td class="r mono">${x.d}</td><td class="r mono">${x.a}</td></tr>`).join('')||'<tr><td colspan="4">—</td></tr>'}</tbody></table>`)+
+ box('៥. ហិរញ្ញវត្ថុ',`<table ${T}><thead><tr><th>ប្រភេទ</th><th class="r">វិក្កយបត្រ</th><th class="r">តម្លៃសេវា</th><th class="r">ប្រាក់ប្រមូលបាន</th></tr></thead><tbody>${Object.entries(r.fin).map(([k,x])=>`<tr><td>${esc(PAY[k]||k)}</td><td class="r mono">${x.n}</td><td class="r mono">${money(x.t)}</td><td class="r mono">${money(x.c)}</td></tr>`).join('')||'<tr><td colspan="4">—</td></tr>'}<tr><td><b>សរុបប្រមូលបាន</b></td><td></td><td></td><td class="r mono"><b>${money(r.col)}</b></td></tr></tbody></table>`)+
+ box('៦. ថ្នាំប្រើច្រើនបំផុត',`<table ${T}><tbody>${r.topDr.map(([n,q],i)=>`<tr><td>${i+1}. ${esc(n)}</td><td class="r mono">${q}</td></tr>`).join('')||'<tr><td>—</td></tr>'}</tbody></table>`)+
+ box('៧. វត្តមានបុគ្គលិក',`<table ${T}><thead><tr><th>ឈ្មោះ</th><th>តួនាទី</th><th class="r">មកធ្វើការ</th><th class="r">យឺត</th><th class="r">ច្បាប់</th><th class="r">អវត្តមាន</th><th class="r">ម៉ោងសរុប</th></tr></thead><tbody>${r.att.map(x=>`<tr><td>${esc(x.s.name)}</td><td>${ROLES[x.s.role]||''}</td><td class="r mono">${x.p}</td><td class="r mono">${x.l}</td><td class="r mono">${x.v}</td><td class="r mono">${x.a}</td><td class="r mono">${x.h.toFixed(1)}</td></tr>`).join('')}</tbody></table>`);}
+function vReports(){const m=REP_M||today().slice(0,7);const r=repData(m);
+ return `<div class="bar"><input type="month" class="mono" value="${m}" onchange="REP_M=this.value;render()"><span class="sp"></span><button class="btn" onclick="exportOPD()">⬇ បញ្ជី OPD (CSV)</button><button class="btn pri" onclick="printRep()">🖨️ បោះពុម្ពរបាយការណ៍</button></div>
+ <div class="stats">${stat('OPD សរុប',r.vs.length,'ករណីថ្មី '+r.vs.filter(v=>v.newCase).length,'#22d3e6')}${stat('ចូលសម្រាក IPD',r.admIn.length,'ចេញ '+r.dis.length,'#f4cf86')}${stat('អត្រាប្រើគ្រែ',r.occ.toFixed(0)+'%','ALOS '+r.los.toFixed(1)+' ថ្ងៃ','#3b8bff')}${stat('ប្រាក់ប្រមូលបាន',Math.round(r.col/1000).toLocaleString()+'k','រៀល','#34d399')}</div>${repBody(r)}`;}
+function printRep(){const m=REP_M||today().slice(0,7);const [Y,M]=m.split('-');printHTML(phead(`របាយការណ៍សកម្មភាពប្រចាំខែ${KM[+M-1]} ឆ្នាំ${Y}<br><small>MONTHLY HMIS ACTIVITY REPORT</small>`)+repBody(repData(m),1)+sig('ប្រធានមន្ទីរពេទ្យ',''));}
+function exportOPD(){const m=REP_M||today().slice(0,7);const rows=[['Date','HN','Name','Sex','Age','Case','Diagnosis','Disposition','Payment','Doctor']];all('visits').filter(v=>inMonth(v.date,m)&&v.status==='done').sort((a,b)=>a.date.localeCompare(b.date)).forEach(v=>{const p=get('patients',v.patientId)||{};rows.push([fmtD(v.date),p.mrn,p.name,p.sex,Math.floor(ageOf(p,v.date)),v.newCase?'New':'Old',dxPlain(v.dx),v.disp,v.payType,staffName(v.doctorId)]);});download(`OPD-register-${m}.csv`,csv(rows),'text/csv');}
+
+/* ================= ATTENDANCE ================= */
+let ATT_TAB='day',ATT_D=null,ATT_M=null;
+const ATS={present:['មក','ok'],late:['យឺត','wa'],leave:['ច្បាប់','sea'],absent:['អវត្តមាន','bad']};
+function vAtt(){const admin=ME.role==='admin';const T=admin?ATT_TAB:'month';
+ const tabs=admin?`<div class="tabs">${[['day','📅 ប្រចាំថ្ងៃ'],['month','🗓️ ប្រចាំខែ']].map(t=>`<button class="${T===t[0]?'on':''}" onclick="ATT_TAB='${t[0]}';render()">${t[1]}</button>`).join('')}</div>`:'';
+ if(T==='day'){const d=ATT_D||today();const st=all('staff').filter(s=>s.active!==false).sort((a,b)=>a.name.localeCompare(b.name));const recs={};all('attendance').filter(a=>a.date===d).forEach(a=>recs[a.staffId]=a);const cnt=k=>Object.values(recs).filter(r=>r.status===k).length;
+  return tabs+`<div class="bar"><input type="date" class="mono" value="${d}" onchange="ATT_D=this.value;render()"><button class="btn sm ghost" onclick="ATT_D=null;render()">ថ្ងៃនេះ</button>${chip('មក '+cnt('present'),'ok')}${chip('យឺត '+cnt('late'),'wa')}${chip('ច្បាប់ '+cnt('leave'),'sea')}${chip('មិនទាន់ចុះ '+(st.length-Object.keys(recs).length),'bad')}</div>
+  <div class="card p0"><div class="tw"><table class="t"><thead><tr><th>បុគ្គលិក</th><th>ផ្នែក</th><th>វេន</th><th>ចូល</th><th>ចេញ</th><th class="r">ម៉ោង</th><th>ស្ថានភាព</th><th class="r"></th></tr></thead><tbody>${st.map(s=>{const r=recs[s.id];return `<tr><td><b>${esc(s.name)}</b><div class="sub">${ROLES[s.role]||''}</div></td><td>${esc(s.dept||'')}</td><td class="mono sub">${s.shiftStart||''}–${s.shiftEnd||''}</td><td class="mono">${r&&r.in||'—'}</td><td class="mono">${r&&r.out||'—'}</td><td class="r mono">${r?hrs(r.in,r.out).toFixed(1):''}</td><td>${r?chip(ATS[r.status][0],ATS[r.status][1]):chip('—')}${r&&r.note?` <span class="sub">${esc(r.note)}</span>`:''}</td><td class="r"><button class="btn sm" onclick="attEdit('${s.id}','${d}')">✏️</button></td></tr>`;}).join('')}</tbody></table></div></div>`;}
+ const m=ATT_M||today().slice(0,7);const [Y,M]=m.split('-').map(Number);const dim=new Date(Y,M,0).getDate();const td=today();
+ const st=(admin?all('staff').filter(s=>s.active!==false):[ME]).sort((a,b)=>a.name.localeCompare(b.name));
+ return tabs+`<div class="bar"><input type="month" class="mono" value="${m}" onchange="ATT_M=this.value;render()"><span class="sp"></span><span class="sub"><span class="c-p">✓ មក</span> · <span class="c-l">L យឺត</span> · <span class="c-v">ច ច្បាប់</span> · <span class="c-a">✕ អវត្តមាន</span></span><button class="btn" onclick="exportAtt()">⬇ CSV</button><button class="btn pri" onclick="printAtt()">🖨️</button></div>
+ <div class="card"><div class="tw">${attGrid(st,m,dim,td)}</div></div>`;}
+function attGrid(st,m,dim,td,pr){const recs={};all('attendance').filter(a=>inMonth(a.date,m)).forEach(a=>recs[a.staffId+'|'+a.date]=a);const [Y,M]=m.split('-').map(Number);
+ const head=Array.from({length:dim},(_,i)=>{const dw=new Date(Y,M-1,i+1).getDay();return `<th class="${dw===0?'sun':''}">${i+1}</th>`;}).join('');
+ return `<table class="ag"><thead><tr><th>ឈ្មោះ</th>${head}<th>មក</th><th>យឺត</th><th>ច្បាប់</th><th>ម៉ោង</th></tr></thead><tbody>${st.map(s=>{let p=0,l=0,v=0,h=0;const cells=Array.from({length:dim},(_,i)=>{const d=m+'-'+pad(i+1);const r=recs[s.id+'|'+d];if(r){if(r.status==='present'||r.status==='late')p++;if(r.status==='late')l++;if(r.status==='leave')v++;h+=hrs(r.in,r.out);}
+  const sym=!r?(d<td&&new Date(d).getDay()!==0?'<span class="sub">·</span>':''):r.status==='present'?'<span class="c-p">✓</span>':r.status==='late'?'<span class="c-l">L</span>':r.status==='leave'?'<span class="c-v">ច</span>':'<span class="c-a">✕</span>';
+  return `<td ${!pr&&ME.role==='admin'?`style="cursor:pointer" onclick="attEdit('${s.id}','${d}')"`:''} title="${r?(r.in||'')+'–'+(r.out||''):''}">${sym}</td>`;}).join('');
+  return `<tr><td class="n">${esc(s.name)}</td>${cells}<td class="mono">${p}</td><td class="mono">${l}</td><td class="mono">${v}</td><td class="mono">${h.toFixed(0)}</td></tr>`;}).join('')}</tbody></table>`;}
+function attEdit(sid,d){const s=get('staff',sid);const r=all('attendance').find(a=>a.staffId===sid&&a.date===d)||{};
+ openModal(`វត្តមាន · ${esc(s.name)} · ${fmtD(d)}`,`<div class="fg">${fld('ស្ថានភាព',sel('ae_s',Object.entries(ATS).map(([k,v])=>[k,v[0]]),r.status||'present'))}${fld('ម៉ោងចូល',inp('ae_i',r.in,'type="time" class="mono"'))}${fld('ម៉ោងចេញ',inp('ae_o',r.out,'type="time" class="mono"'))}${fld('កំណត់សម្គាល់ (ឧ. មូលហេតុច្បាប់)',inp('ae_n',r.note),'wf')}</div>`,(r.id?`<button class="btn bad" onclick="attDel('${r.id}')">លុប</button><span class="sp"></span>`:'')+SAVE_FOOT('ae_save'),'sm');
+ mq('#ae_save').onclick=()=>{put('attendance',Object.assign(r,{id:'att_'+sid+'_'+d,staffId:sid,date:d,status:mv('#ae_s'),in:mv('#ae_i'),out:mv('#ae_o'),note:mv('#ae_n'),editedBy:ME.id}));closeModal();toast('បានរក្សាទុក','ok');render();};}
+function attDel(id){del('attendance',id);closeModal();render();}
+function exportAtt(){const m=ATT_M||today().slice(0,7);const st=ME.role==='admin'?all('staff'):[ME];const rows=[['Date','Staff','Role','In','Out','Hours','Status','Note']];all('attendance').filter(a=>inMonth(a.date,m)&&st.some(s=>s.id===a.staffId)).sort((a,b)=>a.date.localeCompare(b.date)).forEach(a=>{const s=DB.staff[a.staffId]||{};rows.push([fmtD(a.date),s.name,s.role,a.in,a.out,hrs(a.in,a.out).toFixed(2),a.status,a.note]);});download(`attendance-${m}.csv`,csv(rows),'text/csv');}
+function printAtt(){const m=ATT_M||today().slice(0,7);const [Y,M]=m.split('-').map(Number);const st=(ME.role==='admin'?all('staff').filter(s=>s.active!==false):[ME]).sort((a,b)=>a.name.localeCompare(b.name));
+ printHTML(phead(`តារាងវត្តមានបុគ្គលិក ខែ${KM[M-1]} ឆ្នាំ${Y}`)+attGrid(st,m,new Date(Y,M,0).getDate(),today(),1).replace('class="ag"','class="ag" border="1"')+`<p><small>✓ មក · L យឺត · ច ច្បាប់ · ✕ អវត្តមាន</small></p>`+sig('ប្រធានការិយាល័យរដ្ឋបាល',''),'A4L');}
+
+/* ================= STAFF ================= */
+function vStaff(){const st=Object.values(DB.staff).filter(s=>!s.deleted).sort((a,b)=>(b.active!==false)-(a.active!==false)||a.name.localeCompare(b.name));
+ return `<div class="bar"><span class="sub">បុគ្គលិកសកម្ម ${st.filter(s=>s.active!==false).length} នាក់</span><span class="sp"></span><button class="btn pri" onclick="staffForm()">＋ បុគ្គលិកថ្មី</button></div>
+ <div class="card p0"><div class="tw"><table class="t"><thead><tr><th>ឈ្មោះ</th><th>តួនាទី</th><th>ផ្នែក</th><th>ទូរស័ព្ទ</th><th>វេន</th><th>PIN</th><th>ស្ថានភាព</th></tr></thead><tbody>${st.map(s=>`<tr class="click" onclick="staffForm('${s.id}')"><td><b>${esc(s.name)}</b> <span class="sub">${sexTxt(s.sex)}</span></td><td>${chip(ROLES[s.role]||s.role,s.role==='admin'?'sand':'ac')}</td><td>${esc(s.dept||'')}</td><td class="mono">${esc(s.phone||'')}</td><td class="mono">${s.shiftStart||''}–${s.shiftEnd||''}</td><td class="mono sub">${'•'.repeat(String(s.pin||'').length)}</td><td>${s.active!==false?chip('សកម្ម','ok'):chip('ផ្អាក','bad')}</td></tr>`).join('')}</tbody></table></div></div>`;}
+function staffForm(id){const s=id?get('staff',id):{active:true,shiftStart:'07:30',shiftEnd:'17:00',role:'nurse'};
+ openModal(id?'កែប្រែបុគ្គលិក':'បុគ្គលិកថ្មី',`<div class="fg">${fld('ឈ្មោះ *',inp('s_name',s.name),'w2')}${fld('ភេទ',sel('s_sex',[['M','ប្រុស'],['F','ស្រី']],s.sex))}${fld('តួនាទី (សិទ្ធិប្រើប្រាស់)',sel('s_role',ROLES,s.role))}${fld('ផ្នែក',inp('s_dept',s.dept))}${fld('ទូរស័ព្ទ',inp('s_phone',s.phone,'class="mono"'))}${fld('វេនចាប់ផ្តើម',inp('s_ss',s.shiftStart,'type="time" class="mono"'))}${fld('វេនបញ្ចប់',inp('s_se',s.shiftEnd,'type="time" class="mono"'))}${fld('លេខ PIN (៤-៦ ខ្ទង់) *',inp('s_pin',s.pin,'class="mono" inputmode="numeric" maxlength="6"'))}${fld('ស្ថានភាព',sel('s_act',[['1','សកម្ម'],['0','ផ្អាក']],s.active!==false?'1':'0'))}</div>`,(id&&id!==ME.id?`<button class="btn bad" onclick="delStaff('${id}')">លុប</button><span class="sp"></span>`:'')+SAVE_FOOT('s_save'));
+ mq('#s_save').onclick=()=>{const name=mv('#s_name'),pin=mv('#s_pin'),role=mv('#s_role'),act=mv('#s_act')==='1';
+  if(!name){toast('សូមបញ្ចូលឈ្មោះ','bad');return;}if(!/^\d{4,6}$/.test(pin)){toast('PIN ត្រូវជាលេខ ៤-៦ ខ្ទង់','bad');return;}
+  if(all('staff').some(x=>x.id!==id&&String(x.pin)===pin)){toast('PIN នេះមានគេប្រើរួចហើយ','bad');return;}
+  if(id&&s.role==='admin'&&(role!=='admin'||!act)&&!all('staff').some(x=>x.id!==id&&x.role==='admin'&&x.active!==false)){toast('ត្រូវមាន Admin សកម្មយ៉ាងហោចណាស់ម្នាក់','bad');return;}
+  Object.assign(s,{name,sex:mv('#s_sex'),role,dept:mv('#s_dept'),phone:mv('#s_phone'),shiftStart:mv('#s_ss'),shiftEnd:mv('#s_se'),pin,active:act});put('staff',s);if(ME&&s.id===ME.id)ME=s;closeModal();toast('បានរក្សាទុក','ok');render();};}
+async function delStaff(id){const s=get('staff',id);if(s.role==='admin'&&!all('staff').some(x=>x.id!==id&&x.role==='admin'&&x.active!==false)){toast('មិនអាចលុប Admin ចុងក្រោយ','bad');return;}if(!await ask(`លុប <b>${esc(s.name)}</b>? (ប្រវត្តិវត្តមាននៅរក្សាទុក)`,'លុប',1))return;del('staff',id);closeModal();render();}
+
+/* ================= SETTINGS ================= */
+function vSet(){const s=S();
+ return `<div class="card"><h4>🏥 ព័ត៌មានមន្ទីរពេទ្យ</h4><div class="fg">${fld('ឈ្មោះ (ខ្មែរ)',inp('st_km',s.hospKm),'w2')}${fld('ឈ្មោះ (English)',inp('st_en',s.hospEn),'w2')}${fld('អាសយដ្ឋាន',inp('st_addr',s.addr))}${fld('ទូរស័ព្ទ',inp('st_ph',s.phone,'class="mono"'))}${fld('ថ្លៃពិគ្រោះ (៛)',inp('st_cf',s.consultFee,'type="number" class="mono"'))}${fld('ថ្លៃគ្រែ/ថ្ងៃ (៛)',inp('st_bf',s.bedFee,'type="number" class="mono"'))}${fld('អនុគ្រោះយឺត (នាទី)',inp('st_lg',s.lateGrace,'type="number" class="mono"'))}${fld('ចាក់សោស្វ័យប្រវត្តិ (នាទី)',inp('st_lk',s.lockMin,'type="number" class="mono"'))}</div></div>
+ <div class="grid2"><div class="card"><h4>🛏️ ផ្នែក និងគ្រែ</h4><div class="sub" style="margin-bottom:6px">មួយបន្ទាត់ក្នុងមួយផ្នែក៖ <span class="mono">CODE | ឈ្មោះ | ចំនួនគ្រែ</span></div><textarea id="st_w" class="inp mono" style="width:100%;min-height:150px">${esc((s.wards||[]).map(w=>[w.code,w.name,w.beds].join(' | ')).join('\n'))}</textarea></div>
+ <div class="card"><h4>🧪 បញ្ជីតេស្ត & តម្លៃ</h4><div class="sub" style="margin-bottom:6px"><span class="mono">CODE | ឈ្មោះ | lab/imaging | តម្លៃ | ឯកតា | តម្លៃយោង</span></div><textarea id="st_l" class="inp mono" style="width:100%;min-height:150px;font-size:12px">${esc((s.labCat||[]).map(c=>[c.code,c.name,c.cat,c.price,c.unit||'',c.ref||''].join(' | ')).join('\n'))}</textarea></div></div>
+ <div class="bar" style="margin-top:16px"><span class="sp"></span><button class="btn pri" onclick="saveSet()">💾 រក្សាទុកការកំណត់</button></div>
+ <div class="card"><h4>☁️ Google Sheets Sync</h4><div class="sub" style="margin-bottom:8px">ដាក់ URL ពី Apps Script (Deploy ▸ Web app ▸ /exec)។ URL នេះរក្សាទុកតែក្នុងឧបករណ៍នេះ — ឧបករណ៍នីមួយៗត្រូវដាក់ម្តង។</div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><input id="st_gas" class="inp mono" style="flex:1;min-width:260px" value="${esc(META.gas||'')}" placeholder="https://script.google.com/macros/s/.../exec"><button class="btn" onclick="META.gas=mv('#st_gas');flush();sync(true)">💾 រក្សាទុក & Sync</button></div>
+ <div class="sub mono" style="margin-top:8px">Sync ចុងក្រោយ៖ ${META.lastSync?fmtDT(META.lastSync):'—'} · រង់ចាំបញ្ជូន៖ ${pending()}</div></div>
+ <div class="card"><h4>💾 បម្រុងទុកទិន្នន័យ (Backup)</h4><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" onclick="exportBackup()">⬇ ទាញយក Backup (JSON)</button><label class="btn">⬆ ស្តារពី Backup<input type="file" accept=".json" style="display:none" onchange="importBackup(this)"></label></div></div>`;}
+function saveSet(){const s=S();
+ const wards=$('#st_w').value.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(a=>a[0]).map(a=>({code:a[0].toUpperCase().replace(/[^A-Z0-9]/g,''),name:a[1]||a[0],beds:+a[2]||0}));
+ const occ=bedOcc();const lost=Object.keys(occ).filter(b=>!wards.some(w=>b.startsWith(w.code+'-')&&+b.split('-')[1]<=w.beds));if(lost.length){toast('មិនអាចដកគ្រែដែលមានអ្នកជំងឺ៖ '+lost.join(', '),'bad');return;}
+ const labs=$('#st_l').value.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(a=>a[0]&&a[1]).map(a=>({code:a[0],name:a[1],cat:a[2]==='imaging'?'imaging':'lab',price:+a[3]||0,unit:a[4]||'',ref:a[5]||''}));
+ Object.assign(s,{hospKm:$('#st_km').value.trim(),hospEn:$('#st_en').value.trim(),addr:$('#st_addr').value.trim(),phone:$('#st_ph').value.trim(),consultFee:+$('#st_cf').value||0,bedFee:+$('#st_bf').value||0,lateGrace:+$('#st_lg').value||0,lockMin:Math.max(1,+$('#st_lk').value||20),wards,labCat:labs});
+ put('settings',s);$('#lkHosp').textContent=s.hospKm;toast('បានរក្សាទុកការកំណត់','ok');render();}
+function exportBackup(){download('kephms-backup-'+today()+'.json',JSON.stringify({app:'kephms',at:Date.now(),DB}),'application/json');}
+function importBackup(el){const f=el.files[0];if(!f)return;const r=new FileReader();r.onload=async()=>{try{const j=JSON.parse(r.result);if(!j.DB)throw 0;if(!await ask('បញ្ចូលទិន្នន័យពី Backup? (កំណត់ត្រាថ្មីជាងនឹងត្រូវរក្សាទុក)','បញ្ចូល'))return;let n=0;
+ COLL.forEach(c=>Object.values(j.DB[c]||{}).forEach(o=>{const cur=DB[c][o.id];if(!cur||(o.updatedAt||0)>(cur.updatedAt||0)){DB[c][o.id]=o;DIRTY[c][o.id]=1;n++;}}));flush();schedSync();toast(`បានបញ្ចូល ${n} កំណត់ត្រា`,'ok');render();}catch(e){toast('ឯកសារមិនត្រឹមត្រូវ','bad');}};r.readAsText(f);el.value='';}
+
+/* ================= BOOT ================= */
+const VIEWS={dash:vDash,patients:vPatients,chart:vChart,opd:vOPD,ipd:vIPD,pharmacy:vPharm,lab:vLab,billing:vBill,reports:vReports,attendance:vAtt,staff:vStaff,settings:vSet};
+load();seed();flush();
+$('#icdl').innerHTML=ICD.map(([c,n])=>`<option value="${c} - ${esc(n)}">`).join('');
+$('#lkHosp').textContent=S().hospKm||'';buildPad();setLockMode('login');clock();setInterval(clock,1000);updSync();
+document.addEventListener('keydown',e=>{if($('#lock').style.display!=='none'){if(/^\d$/.test(e.key))padKey(e.key);else if(e.key==='Backspace')padKey('<');else if(e.key==='Enter')padKey('OK');else if(e.key==='Escape')padKey('C');}});
+['mousemove','keydown','touchstart','click','scroll'].forEach(ev=>document.addEventListener(ev,bump,{passive:true,capture:true}));
+setInterval(()=>{if(ME&&Date.now()-lastAct>(+S().lockMin||20)*60000)lock();},15000);
+setInterval(()=>{if(META.gas)sync();},60000);setTimeout(()=>{if(META.gas)sync();},800);
+window.addEventListener('pagehide',flush);document.addEventListener('visibilitychange',()=>{if(document.hidden)flush();});
+</script>
+</body>
+</html>
